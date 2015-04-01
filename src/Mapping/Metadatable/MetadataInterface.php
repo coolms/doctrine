@@ -10,7 +10,7 @@
 
 namespace CmsDoctrine\Mapping\Metadatable;
 
-use CmsBase\Mapping\Common\ObjectableInterface;
+use CmsCommon\Mapping\Common\ObjectableInterface;
 
 /**
  * Metadata interface
