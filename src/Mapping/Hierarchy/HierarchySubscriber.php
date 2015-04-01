@@ -21,7 +21,7 @@ class HierarchySubscriber extends TreeListener
     /**
      * @var string
      */
-    protected $targetEntity = 'CmsBase\\Mapping\\Hierarchy\\HierarchyInterface';
+    protected $targetEntity = 'CmsCommon\\Mapping\\Hierarchy\\HierarchyInterface';
 
     /**
      * @param EventArgs $eventArgs
