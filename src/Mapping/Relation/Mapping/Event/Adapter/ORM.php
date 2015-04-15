@@ -11,7 +11,10 @@
 namespace CmsDoctrine\Mapping\Relation\Mapping\Event\Adapter;
 
 use Doctrine\ORM\Mapping\ClassMetadata,
+    Doctrine\ORM\Mapping\JoinColumn,
+    Doctrine\ORM\Mapping\MappingException,
     Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM,
+    CmsDoctrine\Mapping\Relation\Annotation\RelationOverride,
     CmsDoctrine\Mapping\Relation\Mapping\Event\RelationAdapterInterface;
 
 /**
@@ -21,130 +24,227 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
 {
     /**
      * {@inheritDoc}
+     *
+     * @throws MappingException
      */
-    public function mapAssociation($classMetadata, $mapping)
+    public function mapRelations($meta, array $relationOverrides)
     {
-        if (empty($mapping['fieldName'])
-            || empty($mapping['targetEntity'])
-            || empty($mapping['type'])
-            || $classMetadata->hasAssociation($mapping['fieldName'])
-        ) {
-            return;
-        }
-
-        $this->map($classMetadata, $mapping);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function remapAssociation($classMetadata, $mapping, $objectType)
-    {
-        if (empty($mapping['fieldName']) || empty($mapping['targetEntity'])) {
-            return;
-        }
-
-        $className      = $classMetadata->getName();
-        $targetEntity   = $mapping['targetEntity'];
-        if (!$className instanceof $targetEntity) {
-            return;
-        }
-
-        /* @var $objectManager \Doctrine\Common\Persistence\ObjectManager */
-        $objectManager  = $this->getObjectManager();
-        $mappings       = $classMetadata->getAssociationMappings();
-        foreach ($mappings as $name => $assoc) {
-            $objectClass = $assoc['targetEntity'];
-            if (!$objectClass instanceof $objectType) {
+        /* @var $relationOverride \CmsDoctrine\Mapping\Relation\Annotation\RelationOverride */
+        foreach ($relationOverrides as $relationOverride) {
+            if (!(($fieldName = $relationOverride->name)
+                && !isset($meta->associationMappings[$fieldName]['inherited']))
+            ) {
                 continue;
             }
 
-            if (!empty($assoc['mappedBy']) && $assoc['mappedBy'] === $mapping['fieldName']) {
-                $mapping['type'] = $this->inverseType($assoc['type']);
-                $mapping['inversedBy'] = $name;
-                $this->map($objectManager->getClassMetadata($objectClass), $mapping);
-                break;
-            } elseif (!empty($assoc['inversedBy']) && $assoc['inversedBy'] === $mapping['fieldName']) {
-                $mapping['type'] = $this->inverseType($assoc['type']);
-                $mapping['mappedBy'] = $name;
-                $this->map($objectManager->getClassMetadata($objectClass), $mapping);
-                break;
-            }
-        }
-    }
+            $override = $this->relationToArray($relationOverride);
 
-    /**
-     * @param ClassMetadata $classMetadata
-     * @param array $mapping
-     *
-     * @return void
-     */
-    private function map($classMetadata, $mapping)
-    {
-        if (!isset($mapping['mappedBy'])) { // owning side
-            /* @var $objectManager \Doctrine\Common\Persistence\ObjectManager */
-            $objectManager  = $this->getObjectManager();
-            /* @var $namingStrategy \CmsDoctrineORM\Mapping\DefaultNamingStrategy */
-            $namingStrategy = $objectManager->getConfiguration()->getNamingStrategy();
-            if ($mapping['type'] === ClassMetadata::MANY_TO_MANY) {
-                $className = $classMetadata->getName();
-                $mapping['joinTable'] = [
-                    'name' => $namingStrategy->joinTableName($className, $mapping['targetEntity'], $mapping['fieldName']),
-                    'joinColumns' => [
-                        [
-                            'name'                  => $namingStrategy->joinKeyColumnName($className),
-                            'referencedColumnName'  => $namingStrategy->referenceColumnName(),
-                        ],
-                    ],
-                    'inverseJoinColumns'=> [
-                        [
-                            'name'                  => $namingStrategy->joinKeyColumnName($mapping['targetEntity']),
-                            'referencedColumnName'  => $namingStrategy->referenceColumnName(),
-                        ],
-                    ],
+            // Check for JoinColumn/JoinColumns annotations
+            if ($relationOverride->joinColumns) {
+                $joinColumns = [];
+                foreach ($associationOverride->joinColumns as $joinColumn) {
+                    $joinColumns[] = $this->joinColumnToArray($joinColumn);
+                }
+                $override['joinColumns'] = $joinColumns;
+            }
+
+            // Check for JoinTable annotations
+            if ($joinTableAnnot = $relationOverride->joinTable) {
+
+                $joinTable      = [
+                    'name'      => $joinTableAnnot->name,
+                    'schema'    => $joinTableAnnot->schema
                 ];
+
+                foreach ($joinTableAnnot->joinColumns as $joinColumn) {
+                    $joinTable['joinColumns'][] = $this->joinColumnToArray($joinColumn);
+                }
+
+                foreach ($joinTableAnnot->inverseJoinColumns as $joinColumn) {
+                    $joinTable['inverseJoinColumns'][] = $this->joinColumnToArray($joinColumn);
+                }
+
+                $override['joinTable'] = $joinTable;
+            }
+
+            if ($meta->hasAssociation($fieldName)) {
+                $mapping = $meta->getAssociationMapping($fieldName);
+
+                if (isset($override['type'])
+                    && !$this->guardAssociationTypeOverride($mapping['type'], $override['type'])
+                ) {
+                    throw new MappingException(sprintf(
+                        'Can\'t override mapping type of %s',
+                        $meta->getName() . '::$' . $fieldName
+                    ));
+                }
+
+                $override = array_replace($mapping, $override);
+                unset($meta->associationMappings[$fieldName]);
             } else {
-                $mapping['joinColumn'] = [
-                    'name'                  => $namingStrategy->joinColumnName($mapping['fieldName']),
-                    'referencedColumnName'  => $namingStrategy->referenceColumnName(),
-                ];
+                $class = $meta->getReflectionClass();
+                $prop = $class->getProperty($fieldName);
+                $prop->setAccessible(true);
+                $value = $prop->getValue($class->newInstanceWithoutConstructor());
+                if (!$this->guardAssociationTypeMapping($value, $override['type'])) {
+                    throw new MappingException(sprintf(
+                        'Can\'t set association mapping on %s',
+                        $meta->getName() . '::$' . $fieldName
+                    ));
+                }
             }
-        }
 
-        if ($classMetadata->hasAssociation($mapping['fieldName'])) {
-            $mapping = array_replace_recursive($classMetadata->getAssociationMapping($mapping['fieldName']), $mapping);
-            unset($classMetadata->associationMappings[$mapping['fieldName']]);
-        }
+            if (!isset($override['mappedBy'])) { // owning side
+                /* @var $objectManager \Doctrine\ORM\EntityManager */
+                $objectManager  = $this->getObjectManager();
+                /* @var $namingStrategy \CmsDoctrineORM\Mapping\DefaultNamingStrategy */
+                $namingStrategy = $objectManager->getConfiguration()->getNamingStrategy();
 
-        switch ($mapping['type']) {
-            case ClassMetadata::ONE_TO_ONE:
-                $classMetadata->mapOneToOne($mapping);
-                break;
-            case ClassMetadata::ONE_TO_MANY:
-                $classMetadata->mapOneToMany($mapping);
-                break;
-            case ClassMetadata::MANY_TO_ONE:
-                $classMetadata->mapManyToOne($mapping);
-                break;
-            case ClassMetadata::MANY_TO_MANY:
-                $classMetadata->mapManyToMany($mapping);
-                break;
+                if ($override['type'] === ClassMetadata::MANY_TO_MANY || !empty($override['joinTable'])) {
+                    if (empty($override['joinTable']['name'])) {
+                        $override['joinTable']['name'] =
+                            $namingStrategy->joinTableName(
+                                $meta->getName(), $override['targetEntity'], $override['fieldName']);
+                    }
+
+                    if (!empty($override['joinTable']['joinColumns'])) {
+                        foreach ($override['joinTable']['joinColumns'] as $key => $column) {
+                            if (empty($column['name'])) {
+                                $override['joinTable']['joinColumns'][$key]['name'] =
+                                    $namingStrategy->joinKeyColumnName($meta->getName());
+                            }
+                        }
+                    } else {
+                        $override['joinTable']['joinColumns'] = [
+                            [
+                                'name'                  => $namingStrategy->joinKeyColumnName($meta->getName()),
+                                'referencedColumnName'  => $namingStrategy->referenceColumnName(),
+                            ],
+                        ];
+                    }
+
+                    if (!empty($override['joinTable']['inverseJoinColumns'])) {
+                        foreach ($override['joinTable']['inverseJoinColumns'] as $key => $column) {
+                            if (empty($column['name'])) {
+                                $override['joinTable']['inverseJoinColumns'][$key]['name'] =
+                                    $namingStrategy->joinKeyColumnName($override['targetEntity']);
+                            }
+                        }
+                    } else {
+                        $override['joinTable']['inverseJoinColumns'] = [
+                            [
+                                'name' => $namingStrategy->joinKeyColumnName($override['targetEntity']),
+                                'referencedColumnName' => $namingStrategy->referenceColumnName(),
+                            ],
+                        ];
+                    }
+                } else {
+                    if (!empty($override['joinColumn'])) {
+                        if (empty($override['joinColumn']['name'])) {
+                            $override['joinColumn']['name'] = $namingStrategy->joinColumnName($override['fieldName']);
+                        }
+                    } else {
+                        $override['joinColumn'] = [
+                            'name' => $namingStrategy->joinColumnName($override['fieldName']),
+                            'referencedColumnName' => $namingStrategy->referenceColumnName(),
+                        ];
+                    }
+                }
+            }
+
+            switch ($override['type']) {
+                case ClassMetadata::ONE_TO_ONE:
+                    $meta->mapOneToOne($override);
+                    break;
+                case ClassMetadata::ONE_TO_MANY:
+                    $meta->mapOneToMany($override);
+                    break;
+                case ClassMetadata::MANY_TO_ONE:
+                    $meta->mapManyToOne($override);
+                    break;
+                case ClassMetadata::MANY_TO_MANY:
+                    $meta->mapManyToMany($override);
+                    break;
+            }
         }
     }
 
     /**
-     * @param int $assocType
-     * @return int
+     * Parse the given RelationOverride as array
+     *
+     * @param RelationOverride $relation
+     * @return array
      */
-    private function inverseType($assocType)
+    private function relationToArray(RelationOverride $relation)
     {
-        if ($assocType === ClassMetadata::ONE_TO_MANY) {
-            return ClassMetadata::MANY_TO_ONE;
-        }
-        if ($assocType === ClassMetadata::MANY_TO_ONE) {
-            return ClassMetadata::ONE_TO_MANY;
+        if ($relation->type && !is_numeric($relation->type)) {
+            $relation->type = constant('\Doctrine\ORM\Mapping\ClassMetadata::' . $relation->type);
         }
 
-        return $assocType;
+        return array_filter([
+            'type' => $relation->type,
+            'targetEntity' => $relation->targetEntity,
+            'fieldName' => $relation->name,
+            'inversedBy' => $relation->inversedBy,
+            'mappedBy' => $relation->mappedBy,
+            'fetch' => $relation->fetch,
+            'cascade' => $relation->cascade,
+            'orphanRemoval' => $relation->orphanRemoval,
+        ]);
+    }
+
+    /**
+     * Parse the given JoinColumn as array
+     *
+     * @param JoinColumn $joinColumn
+     * @return array
+     */
+    private function joinColumnToArray(JoinColumn $joinColumn)
+    {
+        return [
+            'name' => $joinColumn->name,
+            'unique' => $joinColumn->unique,
+            'nullable' => $joinColumn->nullable,
+            'onDelete' => $joinColumn->onDelete,
+            'columnDefinition' => $joinColumn->columnDefinition,
+            'referencedColumnName' => $joinColumn->referencedColumnName,
+        ];
+    }
+
+    /**
+     * @param number $oldType
+     * @param number $newType
+     * @return bool
+     */
+    private function guardAssociationTypeOverride($oldType, $newType)
+    {
+        switch ($oldType) {
+            case ClassMetadata::ONE_TO_MANY:
+            case ClassMetadata::MANY_TO_MANY:
+                return $newType === ClassMetadata::ONE_TO_MANY
+                    || $newType === ClassMetadata::MANY_TO_MANY;
+            case ClassMetadata::ONE_TO_ONE:
+            case ClassMetadata::MANY_TO_ONE:
+                return $newType === ClassMetadata::ONE_TO_ONE
+                    || $newType === ClassMetadata::MANY_TO_ONE;
+        }
+    }
+
+    /**
+     * @param mixed $value
+     * @param string $type
+     * @return bool
+     */
+    private function guardAssociationTypeMapping($value, $type)
+    {
+        switch ($type) {
+            case ClassMetadata::ONE_TO_MANY:
+            case ClassMetadata::MANY_TO_MANY:
+                return is_array($value)
+                    || $value instanceof \Traversable;
+            case ClassMetadata::ONE_TO_ONE:
+            case ClassMetadata::MANY_TO_ONE:
+                return null === $value;
+        }
     }
 }

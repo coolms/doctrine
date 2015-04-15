@@ -10,15 +10,11 @@
 
 namespace CmsDoctrine\Mapping\ElementCollection\Mapping\Driver;
 
-use Gedmo\Mapping\Driver\AbstractAnnotationDriver;
+use Gedmo\Mapping\Driver\AbstractAnnotationDriver,
+    CmsDoctrine\Mapping\ElementCollection\ElementCollectionSubscriber;
 
 class Annotation extends AbstractAnnotationDriver
 {
-    /**
-     * ElementCollection annotation class
-     */
-    const ANNOTATION = 'CmsDoctrine\Mapping\ElementCollection\Annotation\ElementCollection';
-
     /**
      * {@inheritDoc}
      */
@@ -33,7 +29,8 @@ class Annotation extends AbstractAnnotationDriver
                 continue;
             }
 
-            $elementCollection = $this->reader->getPropertyAnnotation($property, static::ANNOTATION);
+            $elementCollection = $this->reader->getPropertyAnnotation(
+                $property, ElementCollectionSubscriber::ELEMENT_COLLECTION_ANNOTATION);
             if (!empty($elementCollection->value)) {
                 $config[] = [
                     'field' => $property->name,

@@ -23,18 +23,9 @@ interface RelationAdapterInterface extends AdapterInterface
 {
     /**
      * @param ClassMetadata $meta
-     * @param array         $mapping
+     * @param array         $relationOverrides
      *
      * @return void
      */
-    public function mapAssociation($meta, $mapping);
-
-    /**
-     * @param ClassMetadata $meta
-     * @param array         $mapping
-     * @param string        $objectType
-     *
-     * @return void
-     */
-    public function remapAssociation($meta, $mapping, $objectType);
+    public function mapRelations($meta, array $relationOverrides);
 }

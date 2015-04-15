@@ -12,6 +12,8 @@ namespace CmsDoctrine\Mapping\Relation;
 
 use Doctrine\Common\EventArgs,
     Gedmo\Mapping\MappedEventSubscriber;
+use Doctrine\Common\EventManager;
+use Doctrine\ORM\Tools\ResolveTargetEntityListener;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
@@ -19,27 +21,57 @@ use Doctrine\Common\EventArgs,
 class RelationSubscriber extends MappedEventSubscriber
 {
     /**
-     * @var string
+     * RelationOverrides annotation class
      */
-    protected $objectType;
+    const RELATION_OVERRIDES_ANNOTATION = 'CmsDoctrine\\Mapping\\Relation\\Annotation\\RelationOverrides';
 
     /**
-     * @var array
+     * RelationOverrides annotation alias
      */
-    protected $mapping = [];
+    const RELATION_OVERRIDES_ODM_ANNOTATION_ALIAS = 'Doctrine\\ODM\\Mapping\\RelationOverrides';
+
+    /**
+     * RelationOverrides annotation alias
+     */
+    const RELATION_OVERRIDES_ORM_ANNOTATION_ALIAS = 'Doctrine\\ORM\\Mapping\\RelationOverrides';
+
+    /**
+     * RelationOverride annotation class
+     */
+    const RELATION_OVERRIDE_ANNOTATION = 'CmsDoctrine\\Mapping\\Relation\\Annotation\\RelationOverride';
+
+    /**
+     * RelationOverride annotation alias
+     */
+    const RELATION_OVERRIDE_ODM_ANNOTATION_ALIAS = 'Doctrine\\ODM\\Mapping\\RelationOverride';
+
+    /**
+     * RelationOverride annotation alias
+     */
+    const RELATION_OVERRIDE_ORM_ANNOTATION_ALIAS = 'Doctrine\\ORM\\Mapping\\RelationOverride';
 
     /**
      * __constructor
-     *
-     * @param string $objectType
-     * @param array  $mapping
      */
-    public function __construct($objectType, array $mapping)
+    public function __construct()
     {
         parent::__construct();
 
-        $this->objectType = $objectType;
-        $this->mapping    = $mapping;
+        if (!class_exists(static::RELATION_OVERRIDES_ODM_ANNOTATION_ALIAS)) {
+            class_alias(static::RELATION_OVERRIDES_ANNOTATION, static::RELATION_OVERRIDES_ODM_ANNOTATION_ALIAS);
+        }
+
+        if (!class_exists(static::RELATION_OVERRIDES_ORM_ANNOTATION_ALIAS)) {
+            class_alias(static::RELATION_OVERRIDES_ANNOTATION, static::RELATION_OVERRIDES_ORM_ANNOTATION_ALIAS);
+        }
+
+        if (!class_exists(static::RELATION_OVERRIDE_ODM_ANNOTATION_ALIAS)) {
+            class_alias(static::RELATION_OVERRIDE_ANNOTATION, static::RELATION_OVERRIDE_ODM_ANNOTATION_ALIAS);
+        }
+
+        if (!class_exists(static::RELATION_OVERRIDE_ORM_ANNOTATION_ALIAS)) {
+            class_alias(static::RELATION_OVERRIDE_ANNOTATION, static::RELATION_OVERRIDE_ORM_ANNOTATION_ALIAS);
+        }
     }
 
     /**
@@ -55,22 +87,18 @@ class RelationSubscriber extends MappedEventSubscriber
      */
     public function loadClassMetadata(EventArgs $eventArgs)
     {
-        $meta = $eventArgs->getClassMetadata();
-        if ($meta->isMappedSuperclass || empty($this->mapping) || empty($this->objectType)) {
-            return;
-        }
-
         /* @var $ea \Gedmo\Mapping\Event\AdapterInterface */
         $ea = $this->getEventAdapter($eventArgs);
         /* @var $om \Doctrine\Common\Persistence\ObjectManager */
         $om = $ea->getObjectManager();
+        /* @var $meta \Doctrine\Common\Persistence\Mapping\ClassMetadata */
+        $meta = $eventArgs->getClassMetadata();
 
         $this->loadMetadataForObjectClass($om, $meta);
 
-        if ($meta->getReflectionClass()->isSubclassOf($this->objectType)) {
-            $ea->mapAssociation($meta, $this->mapping);
-        } else {
-            $ea->remapAssociation($meta, $this->mapping, $this->objectType);
+        $name = $meta->getName();
+        if (!empty(self::$configurations[$this->name][$name]['relationOverrides'])) {
+            $ea->mapRelations($meta, self::$configurations[$this->name][$name]['relationOverrides']);
         }
     }
 

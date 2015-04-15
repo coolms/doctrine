@@ -28,17 +28,17 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
     /**
      * ElementCollection annotation class
      */
-    const ANNOTATION = 'CmsDoctrine\\Mapping\\ElementCollection\\Annotation\\ElementCollection';
+    const ELEMENT_COLLECTION_ANNOTATION = 'CmsDoctrine\\Mapping\\ElementCollection\\Annotation\\ElementCollection';
 
     /**
      * ElementCollection annotation alias
      */
-    const ODM_ANNOTATION_ALIAS = 'Doctrine\\ODM\\Mapping\\ElementCollection';
+    const ELEMENT_COLLECTION_ODM_ANNOTATION_ALIAS = 'Doctrine\\ODM\\Mapping\\ElementCollection';
 
     /**
      * ElementCollection annotation alias
      */
-    const ORM_ANNOTATION_ALIAS = 'Doctrine\\ORM\\Mapping\\ElementCollection';
+    const ELEMENT_COLLECTION_ORM_ANNOTATION_ALIAS = 'Doctrine\\ORM\\Mapping\\ElementCollection';
 
     /**
      * __construct
@@ -47,12 +47,12 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
     {
         parent::__construct();
 
-        if (!class_exists(self::ODM_ANNOTATION_ALIAS)) {
-            class_alias(self::ANNOTATION, self::ODM_ANNOTATION_ALIAS);
+        if (!class_exists(static::ELEMENT_COLLECTION_ODM_ANNOTATION_ALIAS)) {
+            class_alias(static::ELEMENT_COLLECTION_ANNOTATION, static::ELEMENT_COLLECTION_ODM_ANNOTATION_ALIAS);
         }
 
-        if (!class_exists(self::ORM_ANNOTATION_ALIAS)) {
-            class_alias(self::ANNOTATION, self::ORM_ANNOTATION_ALIAS);
+        if (!class_exists(static::ELEMENT_COLLECTION_ORM_ANNOTATION_ALIAS)) {
+            class_alias(static::ELEMENT_COLLECTION_ANNOTATION, static::ELEMENT_COLLECTION_ORM_ANNOTATION_ALIAS);
         }
     }
 
@@ -69,12 +69,12 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
      */
     public function loadClassMetadata(EventArgs $eventArgs)
     {
-        $meta = $eventArgs->getClassMetadata();
-
         /* @var $ea \Gedmo\Mapping\Event\AdapterInterface */
         $ea = $this->getEventAdapter($eventArgs);
         /* @var $om \Doctrine\Common\Persistence\ObjectManager */
         $om = $ea->getObjectManager();
+        /* @var $meta \Doctrine\Common\Persistence\Mapping\ClassMetadata */
+        $meta = $eventArgs->getClassMetadata();
 
         $this->loadMetadataForObjectClass($om, $meta);
     }

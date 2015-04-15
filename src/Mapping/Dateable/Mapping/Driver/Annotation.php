@@ -10,15 +10,11 @@
 
 namespace CmsDoctrine\Mapping\Dateable\Mapping\Driver;
 
-use Gedmo\Timestampable\Mapping\Driver\Annotation as BaseAnnotation;
+use Gedmo\Timestampable\Mapping\Driver\Annotation as BaseAnnotation,
+    CmsDoctrine\Mapping\Dateable\TimestampableSubscriber;
 
 class Annotation extends BaseAnnotation
 {
-    /**
-     * Changeable annotation class
-     */
-    const CHANGEABLE = 'CmsDoctrine\Mapping\Dateable\Annotation\Changeable';
-
     /**
      * Changeable property
      */
@@ -30,10 +26,10 @@ class Annotation extends BaseAnnotation
     public function readExtendedMetadata($meta, array &$config)
     {
         $class = $this->getMetaReflectionClass($meta);
-        if ($class->hasProperty(self::CHANGEABLE_PROPERTY)) {
-            $changeable = $this->reader->getClassAnnotation($class, self::CHANGEABLE);
+        if ($class->hasProperty(static::CHANGEABLE_PROPERTY)) {
+            $changeable = $this->reader->getClassAnnotation($class, TimestampableSubscriber::CHANGEABLE_ANNOTATION);
             if (!empty($changeable->field)) {
-                $property = $class->getProperty(self::CHANGEABLE_PROPERTY);
+                $property = $class->getProperty(static::CHANGEABLE_PROPERTY);
                 if ($meta->isMappedSuperclass && !$property->isPrivate() ||
                     $meta->isInheritedField($property->name) ||
                     isset($meta->associationMappings[$property->name]['inherited'])
@@ -44,7 +40,7 @@ class Annotation extends BaseAnnotation
                         'value' => $changeable->value,
                     ];
                 } else {
-                    $timestampable = $this->reader->getPropertyAnnotation($property, self::TIMESTAMPABLE);
+                    $timestampable = $this->reader->getPropertyAnnotation($property, static::TIMESTAMPABLE);
                     if (!$timestampable->field) {
                         $timestampable->field = $changeable->field;
                     }
