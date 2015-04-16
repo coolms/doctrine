@@ -16,6 +16,11 @@ use Gedmo\Timestampable\Mapping\Driver\Annotation as BaseAnnotation,
 class Annotation extends BaseAnnotation
 {
     /**
+     * Changeable class annotation
+     */
+    const CHANGEABLE = TimestampableSubscriber::CHANGEABLE_ANNOTATION;
+
+    /**
      * Changeable property
      */
     const CHANGEABLE_PROPERTY = 'changedAt';
@@ -27,7 +32,7 @@ class Annotation extends BaseAnnotation
     {
         $class = $this->getMetaReflectionClass($meta);
         if ($class->hasProperty(static::CHANGEABLE_PROPERTY)) {
-            $changeable = $this->reader->getClassAnnotation($class, TimestampableSubscriber::CHANGEABLE_ANNOTATION);
+            $changeable = $this->reader->getClassAnnotation($class, static::CHANGEABLE);
             if (!empty($changeable->field)) {
                 $property = $class->getProperty(static::CHANGEABLE_PROPERTY);
                 if ($meta->isMappedSuperclass && !$property->isPrivate() ||
