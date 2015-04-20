@@ -51,9 +51,9 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
             // Check for JoinTable annotations
             if ($joinTableAnnot = $relationOverride->joinTable) {
 
-                $joinTable      = [
-                    'name'      => $joinTableAnnot->name,
-                    'schema'    => $joinTableAnnot->schema
+                $joinTable = [
+                    'name' => $joinTableAnnot->name,
+                    'schema' => $joinTableAnnot->schema
                 ];
 
                 foreach ($joinTableAnnot->joinColumns as $joinColumn) {
@@ -117,8 +117,8 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
                     } else {
                         $override['joinTable']['joinColumns'] = [
                             [
-                                'name'                  => $namingStrategy->joinKeyColumnName($meta->getName()),
-                                'referencedColumnName'  => $namingStrategy->referenceColumnName(),
+                                'name' => $namingStrategy->joinKeyColumnName($meta->getName()),
+                                'referencedColumnName' => $namingStrategy->referenceColumnName(),
                             ],
                         ];
                     }

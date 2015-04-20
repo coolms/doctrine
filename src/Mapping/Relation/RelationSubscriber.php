@@ -11,9 +11,9 @@
 namespace CmsDoctrine\Mapping\Relation;
 
 use Doctrine\Common\EventArgs,
+    Doctrine\Common\EventManager,
+    Doctrine\ORM\Tools\ResolveTargetEntityListener,
     Gedmo\Mapping\MappedEventSubscriber;
-use Doctrine\Common\EventManager;
-use Doctrine\ORM\Tools\ResolveTargetEntityListener;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
