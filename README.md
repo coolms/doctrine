@@ -1,1 +1,1 @@
-# CoolMS2 Doctrine Extensions Library
+# CoolMS2 Doctrine Common Library
