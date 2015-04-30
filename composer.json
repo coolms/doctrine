@@ -1,8 +1,8 @@
 {
   "name" : "coolms/doctrine",
-  "description" : "CoolMS2 Doctrine Extensions",
+  "description" : "CoolMS2 Doctrine Common Library",
   "type" : "library",
-  "keywords" : ["coolms", "doctrine"],
+  "keywords" : [ "zf2", "coolms", "coolms2", "cmsdoctrine" ],
   "homepage" : "https://github.com/coolms/doctrine",
   "license" : "BSD-3-Clause",
   "authors" : [ {
@@ -28,6 +28,11 @@
   },
   "autoload-dev" : {
     "psr-4" : {"CmsDoctrineTest\\" : "tests/"}
+  },
+  "extra" : {
+    "branch-alias" : {
+      "dev-master" : "0.1.x-dev"
+    }
   },
   "repositories" : [ {
     "type" : "vcs",
