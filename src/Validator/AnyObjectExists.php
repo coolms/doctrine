@@ -32,7 +32,7 @@ class AnyObjectExists extends ObjectExists
 
         if ($valueCount > $fieldsCount) {
             $field = reset($this->fields);
-            $match = $this->objectRepository->findOneBy(array($field => $value));
+            $match = $this->objectRepository->findOneBy([$field => $value]);
         } else {
             if ($valueCount < $fieldsCount) {
                 $value = array_fill(0, $fieldsCount, array_shift($value));
