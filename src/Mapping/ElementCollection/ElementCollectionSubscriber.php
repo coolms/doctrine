@@ -93,7 +93,7 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
         if ($config = $this->getConfiguration($om, $meta->getName())) {
             foreach ($config as $options) {
                 if (!empty($options['field']) && !empty($options['class'])) {
-                    $value = $meta->getReflectionProperty($field)->getValue($object);
+                    $value = $meta->getReflectionProperty($options['field'])->getValue($object);
                     if ($value === null || ($value instanceof Collection && $value->count() === 0)) { // let manual values
                         continue;
                     }

@@ -22,15 +22,20 @@ class Annotation extends AbstractAnnotationDriver
     {
         $class = $this->getMetaReflectionClass($meta);
         foreach ($class->getProperties() as $property) {
-            if ($meta->isMappedSuperclass && !$property->isPrivate() ||
+            if (($meta->isMappedSuperclass && !$property->isPrivate()) ||
                 $meta->isInheritedField($property->name) ||
-                isset($meta->associationMappings[$property->name]['inherited'])
+                isset($meta->associationMappings[$property->name]['inherited']) ||
+                !($class->hasProperty($property->name)
+                    && $class->getProperty($property->name)->getDeclaringClass() === $meta->getName())
             ) {
                 continue;
             }
 
             $elementCollection = $this->reader->getPropertyAnnotation(
-                $property, ElementCollectionSubscriber::ELEMENT_COLLECTION_ANNOTATION);
+                $property,
+                ElementCollectionSubscriber::ELEMENT_COLLECTION_ANNOTATION
+            );
+
             if (!empty($elementCollection->value)) {
                 $config[] = [
                     'field' => $property->name,
