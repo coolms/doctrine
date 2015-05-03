@@ -26,7 +26,7 @@ class Container extends ZendSessionContainer
     /**
      * @var array
      */
-    private $sessionedObjects = [];
+    private $sessionVars = [];
 
     /**
      * {@inheritDoc}
@@ -46,9 +46,9 @@ class Container extends ZendSessionContainer
     public function offsetSet($key, $value)
     {
         $class = $this->getName();
-        if ($value instanceof $class) {
+        if (is_a($value, $class, true)) {
             $om = $this->getObjectManager();
-            unset($this->sessionedObjects[$key]);
+            unset($this->sessionVars[$key]);
             $om->contains($value) ? $om->detach($value) : $om->persist($value);
         }
 
@@ -60,20 +60,25 @@ class Container extends ZendSessionContainer
      */
     public function &offsetGet($key)
     {
-        if (!empty($this->sessionedObjects[$key])) {
-            return $this->sessionedObjects[$key];
+        if (!empty($this->sessionVars[$key])) {
+            return $this->sessionVars[$key];
         }
 
         $om    = $this->getObjectManager();
         $value = parent::offsetGet($key);
         $class = $this->getName();
 
-        if ($value instanceof $class) {
+        if (!empty($value)) {
+            var_dump($value->getHuntingPermit()->getId());
+        }
+
+        if (is_a($value, $class, true)) {
             //$om->clear($class);
             if (!$om->contains($value)) {
                 $value = $om->merge($value);
             }
-            $this->sessionedObjects[$key] = $value;
+
+            $this->sessionVars[$key] =& $value;
         }
 
         return $value;
@@ -84,7 +89,7 @@ class Container extends ZendSessionContainer
      */
     public function offsetExists($key)
     {
-        if (!empty($this->sessionedObjects[$key])) {
+        if (!empty($this->sessionVars[$key])) {
             return true;
         }
 
@@ -96,8 +101,8 @@ class Container extends ZendSessionContainer
      */
     public function offsetUnset($key)
     {
-        if (isset($this->sessionedObjects[$key])) {
-            unset($this->sessionedObjects[$key]);
+        if (isset($this->sessionVars[$key])) {
+            unset($this->sessionVars[$key]);
         }
 
         parent::offsetUnset($key);
@@ -108,11 +113,11 @@ class Container extends ZendSessionContainer
      */
     public function postFlush(LifecycleEventArgs $args)
     {
-        if ($this->sessionedObjects) {
+        if ($this->sessionVars) {
             $object = $args->getObject();
-            foreach ($this->sessionedObjects as $key => $sessionedObject) {
-                if ($object === $sessionedObject) {
-                    unset($this->sessionedObjects[$key]);
+            foreach ($this->sessionVars as $key => $sessionVar) {
+                if ($object === $sessionVar) {
+                    unset($this->sessionVars[$key]);
                 }
             }
         }
