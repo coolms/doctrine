@@ -1,6 +1,6 @@
 <?php
 /**
- * CoolMS2 Doctrine Extentions Library (http://www.coolms.com/)
+ * CoolMS2 Doctrine Common Library (http://www.coolms.com/)
  *
  * @link      http://github.com/coolms/doctrine for the canonical source repository
  * @copyright Copyright (c) 2006-2015 Altgraphic, ALC (http://www.altgraphic.com)

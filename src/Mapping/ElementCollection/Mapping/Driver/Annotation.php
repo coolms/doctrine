@@ -1,6 +1,6 @@
 <?php
 /**
- * CoolMS2 Doctrine Extentions Library (http://www.coolms.com/)
+ * CoolMS2 Doctrine Common Library (http://www.coolms.com/)
  *
  * @link      http://github.com/coolms/doctrine for the canonical source repository
  * @copyright Copyright (c) 2006-2015 Altgraphic, ALC (http://www.altgraphic.com)
@@ -22,11 +22,10 @@ class Annotation extends AbstractAnnotationDriver
     {
         $class = $this->getMetaReflectionClass($meta);
         foreach ($class->getProperties() as $property) {
-            if (($meta->isMappedSuperclass && !$property->isPrivate()) ||
+            if ($meta->isMappedSuperclass && !$property->isPrivate() ||
                 $meta->isInheritedField($property->name) ||
-                isset($meta->associationMappings[$property->name]['inherited']) ||
-                !($class->hasProperty($property->name)
-                    && $class->getProperty($property->name)->getDeclaringClass() === $meta->getName())
+                $meta->isInheritedAssociation($property->name) ||
+                $property->getDeclaringClass()->getName() !== $meta->getName()
             ) {
                 continue;
             }

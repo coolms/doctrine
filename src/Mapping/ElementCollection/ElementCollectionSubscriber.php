@@ -1,6 +1,6 @@
 <?php
 /**
- * CoolMS2 Doctrine Extentions Library (http://www.coolms.com/)
+ * CoolMS2 Doctrine Common Library (http://www.coolms.com/)
  *
  * @link      http://github.com/coolms/doctrine for the canonical source repository
  * @copyright Copyright (c) 2006-2015 Altgraphic, ALC (http://www.altgraphic.com)
@@ -93,8 +93,15 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
         if ($config = $this->getConfiguration($om, $meta->getName())) {
             foreach ($config as $options) {
                 if (!empty($options['field']) && !empty($options['class'])) {
-                    $value = $meta->getReflectionProperty($options['field'])->getValue($object);
-                    if ($value === null || ($value instanceof Collection && $value->count() === 0)) { // let manual values
+                    $class = $meta->getReflectionClass();
+                    if (!$class->hasProperty($options['field'])) {
+                        continue;
+                    }
+                    $property = $class->getProperty($options['field']);
+                    $property->setAccessible(true);
+                    $value = $property->getValue($object);
+                    if ($value === null || ($value instanceof Collection && $value->count() === 0)) {
+                        // let manual values
                         continue;
                     }
 
@@ -119,17 +126,23 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
      * @param ElementCollectionAdapter  $ea
      * @param ClassMetadata             $meta
      * @param string                    $field
-     * @param string                    $class
+     * @param string                    $className
      */
-    protected function updateField($object, $ea, $meta, $field, $class)
+    protected function updateField($object, $ea, $meta, $field, $className)
     {
-        $property = $meta->getReflectionProperty($field);
-        $collection = $ea->getElementCollection($meta, $field, $class);
+        $class = $meta->getReflectionClass();
+        if (!$class->hasProperty($field)) {
+            return;
+        }
+
+        $collection = $ea->getElementCollection($meta, $field, $className);
 
         $setter = 'set' . ucfirst($field);
         if (method_exists($object, $setter)) {
             $object->$setter($collection);
         } else {
+            $property = $class->getProperty($field);
+            $property->setAccessible(true);
             $property->setValue($object, $collection);
         }
     }
