@@ -31,8 +31,8 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
     {
         /* @var $relationOverride \CmsDoctrine\Mapping\Relation\Annotation\RelationOverride */
         foreach ($relationOverrides as $relationOverride) {
-            if (!(($fieldName = $relationOverride->name)
-                && !isset($meta->associationMappings[$fieldName]['inherited']))
+            if (!(($fieldName = $relationOverride->name) &&
+                !$meta->isInheritedAssociation($fieldName))
             ) {
                 continue;
             }
@@ -41,16 +41,14 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
 
             // Check for JoinColumn/JoinColumns annotations
             if ($relationOverride->joinColumns) {
-                $joinColumns = [];
+                $override['joinColumns'] = [];
                 foreach ($associationOverride->joinColumns as $joinColumn) {
-                    $joinColumns[] = $this->joinColumnToArray($joinColumn);
+                    $override['joinColumns'][] = $this->joinColumnToArray($joinColumn);
                 }
-                $override['joinColumns'] = $joinColumns;
             }
 
             // Check for JoinTable annotations
             if ($joinTableAnnot = $relationOverride->joinTable) {
-
                 $joinTable = [
                     'name' => $joinTableAnnot->name,
                     'schema' => $joinTableAnnot->schema
@@ -70,8 +68,8 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
             if ($meta->hasAssociation($fieldName)) {
                 $mapping = $meta->getAssociationMapping($fieldName);
 
-                if (isset($override['type'])
-                    && !$this->guardAssociationTypeOverride($mapping['type'], $override['type'])
+                if (isset($override['type']) &&
+                    !$this->guardAssociationTypeOverride($mapping['type'], $override['type'])
                 ) {
                     throw new MappingException(sprintf(
                         'Can\'t override mapping type of %s',
@@ -81,6 +79,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
 
                 $override = array_replace($mapping, $override);
                 unset($meta->associationMappings[$fieldName]);
+
             } else {
                 $class = $meta->getReflectionClass();
                 $prop = $class->getProperty($fieldName);
@@ -102,9 +101,11 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
 
                 if ($override['type'] === ClassMetadata::MANY_TO_MANY || !empty($override['joinTable'])) {
                     if (empty($override['joinTable']['name'])) {
-                        $override['joinTable']['name'] =
-                            $namingStrategy->joinTableName(
-                                $meta->getName(), $override['targetEntity'], $override['fieldName']);
+                        $override['joinTable']['name'] = $namingStrategy->joinTableName(
+                            $meta->getName(),
+                            $override['targetEntity'],
+                            $override['fieldName']
+                        );
                     }
 
                     if (!empty($override['joinTable']['joinColumns'])) {
@@ -141,7 +142,8 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
                 } else {
                     if (!empty($override['joinColumn'])) {
                         if (empty($override['joinColumn']['name'])) {
-                            $override['joinColumn']['name'] = $namingStrategy->joinColumnName($override['fieldName']);
+                            $override['joinColumn']['name']
+                                = $namingStrategy->joinColumnName($override['fieldName']);
                         }
                     } else {
                         $override['joinColumn'] = [
@@ -178,7 +180,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
     private function relationToArray(RelationOverride $relation)
     {
         if ($relation->type && !is_numeric($relation->type)) {
-            $relation->type = constant('\Doctrine\ORM\Mapping\ClassMetadata::' . $relation->type);
+            $relation->type = constant("\Doctrine\ORM\Mapping\ClassMetadata::{$relation->type}");
         }
 
         return array_filter([
@@ -221,12 +223,12 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
         switch ($oldType) {
             case ClassMetadata::ONE_TO_MANY:
             case ClassMetadata::MANY_TO_MANY:
-                return $newType === ClassMetadata::ONE_TO_MANY
-                    || $newType === ClassMetadata::MANY_TO_MANY;
+                return ($newType === ClassMetadata::ONE_TO_MANY
+                    || $newType === ClassMetadata::MANY_TO_MANY);
             case ClassMetadata::ONE_TO_ONE:
             case ClassMetadata::MANY_TO_ONE:
-                return $newType === ClassMetadata::ONE_TO_ONE
-                    || $newType === ClassMetadata::MANY_TO_ONE;
+                return ($newType === ClassMetadata::ONE_TO_ONE
+                    || $newType === ClassMetadata::MANY_TO_ONE);
         }
     }
 
@@ -240,11 +242,10 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
         switch ($type) {
             case ClassMetadata::ONE_TO_MANY:
             case ClassMetadata::MANY_TO_MANY:
-                return is_array($value)
-                    || $value instanceof \Traversable;
+                return (is_array($value) || $value instanceof \Traversable);
             case ClassMetadata::ONE_TO_ONE:
             case ClassMetadata::MANY_TO_ONE:
-                return null === $value;
+                return (null === $value || is_scalar($value));
         }
     }
 }
