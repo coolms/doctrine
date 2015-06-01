@@ -25,5 +25,5 @@ interface ElementCollectionAdapter extends AdapterInterface
      * @param string $class
      * @return Collection
      */
-    public function getElementCollection($meta, $field, $class);
+    public function getElementCollection($meta, $field, $class, $object);
 }

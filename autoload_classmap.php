@@ -28,6 +28,7 @@ return array(
     'CmsDoctrine\Mapping\Translatable\TranslatableSubscriber'                      => __DIR__ . '/src/Mapping/Translatable/TranslatableSubscriber.php',
     'CmsDoctrine\Persistence\ProvidesObjectRepository'                             => __DIR__ . '/src/Persistence/ProvidesObjectRepository.php',
     'CmsDoctrine\Session\Container'                                                => __DIR__ . '/src/Session/Container.php',
+    'CmsDoctrine\Stdlib\Hydrator\DoctrineObject'                                   => __DIR__ . '/src/Stdlib/Hydrator/DoctrineObject.php',
     'CmsDoctrine\Validator\AnyObjectExists'                                        => __DIR__ . '/src/Validator/AnyObjectExists.php',
     'CmsDoctrineTest\Framework\TestCase'                                           => __DIR__ . '/tests/CmsDoctrine/Framework/TestCase.php',
     'CmsDoctrineTest\SampleTest'                                                   => __DIR__ . '/tests/CmsDoctrine/SampleTest.php',

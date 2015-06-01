@@ -15,6 +15,8 @@ use Zend\Session\Container as ZendSessionContainer,
     Doctrine\Common\Persistence\Event\LifecycleEventArgs,
     Doctrine\Common\Persistence\ObjectManager,
     DoctrineModule\Persistence\ProvidesObjectManager;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
@@ -47,9 +49,42 @@ class Container extends ZendSessionContainer
     {
         $class = $this->getName();
         if (is_a($value, $class, true)) {
+
+            //unset($this->sessionVars[$key]);
+
+            
+
             $om = $this->getObjectManager();
-            unset($this->sessionVars[$key]);
-            $om->contains($value) ? $om->detach($value) : $om->persist($value);
+            if ($om->contains($value)) {
+                //echo 'detach';
+                $om->detach($value);
+            } else {
+                //$value = $om->merge($value);
+                //$om->detach($value);
+                //$om->persist($value);
+            }
+
+            $this->sessionVars[$key] = $value;
+
+            /*$meta = $om->getClassMetadata(get_class($value));
+            $refl = $meta->getReflectionClass();
+            
+            foreach ($refl->getProperties() as $property) {
+                $fieldName = $property->getName();
+                if ($meta->hasAssociation($fieldName) || $meta->hasField($fieldName)) {
+                    continue;
+                }
+
+                $property->setAccessible(true);
+                $propertyValue = $property->getValue($value);
+
+                if ($propertyValue instanceof Collection) {
+                    echo $fieldName;
+                    $property->setValue($value, new ArrayCollection());
+                }
+            }*/
+            
+            
         }
 
         parent::offsetSet($key, $value);
@@ -60,25 +95,22 @@ class Container extends ZendSessionContainer
      */
     public function &offsetGet($key)
     {
-        if (!empty($this->sessionVars[$key])) {
-            return $this->sessionVars[$key];
+        if (isset($this->sessionVars[$key])) {
+            $value = $this->sessionVars[$key];
+        } else {
+            $value = parent::offsetGet($key);
         }
 
-        $om    = $this->getObjectManager();
-        $value = parent::offsetGet($key);
         $class = $this->getName();
 
-        if (!empty($value)) {
-            var_dump($value->getHuntingPermit()->getId());
-        }
-
         if (is_a($value, $class, true)) {
-            //$om->clear($class);
+            $om = $this->getObjectManager();
             if (!$om->contains($value)) {
                 $value = $om->merge($value);
+                //echo get_class($value->getHolidays());
             }
 
-            $this->sessionVars[$key] =& $value;
+            $this->sessionVars[$key] = $value;
         }
 
         return $value;

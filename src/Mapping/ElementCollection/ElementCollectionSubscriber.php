@@ -48,11 +48,13 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
         parent::__construct();
 
         if (!class_exists(static::ELEMENT_COLLECTION_ODM_ANNOTATION_ALIAS)) {
-            class_alias(static::ELEMENT_COLLECTION_ANNOTATION, static::ELEMENT_COLLECTION_ODM_ANNOTATION_ALIAS);
+            class_alias(static::ELEMENT_COLLECTION_ANNOTATION,
+                static::ELEMENT_COLLECTION_ODM_ANNOTATION_ALIAS);
         }
 
         if (!class_exists(static::ELEMENT_COLLECTION_ORM_ANNOTATION_ALIAS)) {
-            class_alias(static::ELEMENT_COLLECTION_ANNOTATION, static::ELEMENT_COLLECTION_ORM_ANNOTATION_ALIAS);
+            class_alias(static::ELEMENT_COLLECTION_ANNOTATION,
+                static::ELEMENT_COLLECTION_ORM_ANNOTATION_ALIAS);
         }
     }
 
@@ -61,7 +63,7 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
      */
     public function getSubscribedEvents()
     {
-        return ['loadClassMetadata', 'postLoad'];
+        return ['loadClassMetadata', 'postLoad', 'prePersist'];
     }
 
     /**
@@ -79,6 +81,11 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
         $this->loadMetadataForObjectClass($om, $meta);
     }
 
+    public function prePersist(EventArgs $eventArgs)
+    {
+        //$this->postLoad($eventArgs);
+    }
+
     /**
      * @param EventArgs $eventArgs
      */
@@ -91,22 +98,26 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
         $meta = $om->getClassMetadata(get_class($object));
 
         if ($config = $this->getConfiguration($om, $meta->getName())) {
+            //var_dump($config);
             foreach ($config as $options) {
-                if (!empty($options['field']) && !empty($options['class'])) {
-                    $class = $meta->getReflectionClass();
-                    if (!$class->hasProperty($options['field'])) {
-                        continue;
-                    }
-                    $property = $class->getProperty($options['field']);
-                    $property->setAccessible(true);
-                    $value = $property->getValue($object);
-                    if ($value === null || ($value instanceof Collection && $value->count() === 0)) {
-                        // let manual values
-                        continue;
-                    }
-
-                    $this->updateField($object, $ea, $meta, $options['field'], $options['class']);
+                if (empty($options['field']) || empty($options['class'])) {
+                    continue;
                 }
+
+                $class = $meta->getReflectionClass();
+                if (!$class->hasProperty($options['field'])) {
+                    continue;
+                }
+
+                $property = $class->getProperty($options['field']);
+                $property->setAccessible(true);
+                $value = $property->getValue($object);
+                //if ($value === null || ($value instanceof Collection && $value->count() === 0)) { // let manual values
+                    
+                    
+                    //echo $options['class'];
+                    //$this->updateField($object, $ea, $meta, $options['field'], $options['class']);
+                //}
             }
         }
     }
@@ -135,7 +146,7 @@ class ElementCollectionSubscriber extends MappedEventSubscriber
             return;
         }
 
-        $collection = $ea->getElementCollection($meta, $field, $className);
+        $collection = $ea->getElementCollection($meta, $field, $className, $object);
 
         $setter = 'set' . ucfirst($field);
         if (method_exists($object, $setter)) {

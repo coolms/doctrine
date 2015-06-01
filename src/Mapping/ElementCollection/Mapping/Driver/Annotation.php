@@ -12,6 +12,7 @@ namespace CmsDoctrine\Mapping\ElementCollection\Mapping\Driver;
 
 use Gedmo\Mapping\Driver\AbstractAnnotationDriver,
     CmsDoctrine\Mapping\ElementCollection\ElementCollectionSubscriber;
+use Doctrine\ORM\Mapping\ClassMetadata;
 
 class Annotation extends AbstractAnnotationDriver
 {
@@ -23,10 +24,14 @@ class Annotation extends AbstractAnnotationDriver
         $class = $this->getMetaReflectionClass($meta);
         foreach ($class->getProperties() as $property) {
             if ($meta->isMappedSuperclass && !$property->isPrivate() ||
+                isset($meta->associationMappings[$property->name]) ||
                 $meta->isInheritedField($property->name) ||
                 $meta->isInheritedAssociation($property->name) ||
                 $property->getDeclaringClass()->getName() !== $meta->getName()
             ) {
+                if (isset($meta->associationMappings[$property->name])) {
+                    //var_dump($meta->associationMappings[$property->name]);
+                }
                 continue;
             }
 
@@ -36,10 +41,33 @@ class Annotation extends AbstractAnnotationDriver
             );
 
             if (!empty($elementCollection->value)) {
-                $config[] = [
+                //echo $meta->name . '::' . $property->name . "<br>\n";
+                $meta->associationMappings[$property->name] = [
+                    'fieldName' => $property->name,
+                    'targetEntity' => $elementCollection->value,
+                    'sourceEntity' => $meta->name,
+                    'type' => ClassMetadata::TO_MANY,
+                    'isOwningSide' => false,
+                    'inversedBy' => null,
+                    'mappedBy' => null,
+                    'cascade' => [],
+                    'isCascadeDetach' => false,
+                    'isCascadeMerge' => false,
+                    'isCascadePersist' => false,
+                    'isCascadeRefresh' => false,
+                    'isCascadeRemove' => false,
+                    'isOnDeleteCascade' => false,
+                    'orphanRemoval' => false,
+                    'fetch' => ClassMetadata::FETCH_EXTRA_LAZY,
+                    'joinColumnFieldNames' => [],
+                    'targetToSourceKeyColumns' => [],
+                    'sourceToTargetKeyColumns' => [],
+                ];
+                
+                /*$config[] = [
                     'field' => $property->name,
                     'class' => $elementCollection->value,
-                ];
+                ];*/
             }
         }
     }

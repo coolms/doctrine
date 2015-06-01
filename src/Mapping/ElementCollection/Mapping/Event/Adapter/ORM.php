@@ -16,6 +16,9 @@ use Doctrine\Common\Collections\ArrayCollection,
     Gedmo\Mapping\Event\Adapter\ORM as GedmoORMAdapter,
     Gedmo\Timestampable\Mapping\Event\TimestampableAdapter,
     CmsDoctrine\Mapping\ElementCollection\Mapping\Event\ElementCollectionAdapter;
+use Doctrine\ORM\LazyCriteriaCollection;
+use Doctrine\ORM\Persisters\Entity\BasicEntityPersister;
+use Doctrine\Common\Collections\Criteria;
 
 /**
  * Doctrine event adapter for ORM adapted for ElementCollection behavior
@@ -25,10 +28,27 @@ final class ORM extends GedmoORMAdapter implements ElementCollectionAdapter
     /**
      * {@inheritDoc}
      */
-    public function getElementCollection($meta, $field, $class)
+    public function getElementCollection($meta, $field, $class, $entity)
     {
         $om = $this->getObjectManager();
-        $collection = new ArrayCollection($om->getRepository($class)->findAll());
-        return new PersistentCollection($om, $class, $collection);
+        //$collection = new ArrayCollection($om->getRepository($class)->findAll());
+        $collection = new ArrayCollection();
+        //return new PersistentCollection($om, $class, $collection);
+
+        /*$collection = new LazyCriteriaCollection(
+            new BasicEntityPersister($om, $om->getClassMetadata($class)),
+            new Criteria()
+        );*/
+
+        //return $collection;
+
+        //echo $class;
+        
+        $coll = new PersistentCollection($om, $class, $collection);
+        //$coll->setOwner($entity, $meta->getAssociationMapping($field));
+
+        //echo $coll->count();
+
+        return $coll;
     }
 }
