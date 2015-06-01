@@ -49,42 +49,12 @@ class Container extends ZendSessionContainer
     {
         $class = $this->getName();
         if (is_a($value, $class, true)) {
-
-            //unset($this->sessionVars[$key]);
-
-            
-
             $om = $this->getObjectManager();
             if ($om->contains($value)) {
-                //echo 'detach';
                 $om->detach($value);
-            } else {
-                //$value = $om->merge($value);
-                //$om->detach($value);
-                //$om->persist($value);
             }
 
             $this->sessionVars[$key] = $value;
-
-            /*$meta = $om->getClassMetadata(get_class($value));
-            $refl = $meta->getReflectionClass();
-            
-            foreach ($refl->getProperties() as $property) {
-                $fieldName = $property->getName();
-                if ($meta->hasAssociation($fieldName) || $meta->hasField($fieldName)) {
-                    continue;
-                }
-
-                $property->setAccessible(true);
-                $propertyValue = $property->getValue($value);
-
-                if ($propertyValue instanceof Collection) {
-                    echo $fieldName;
-                    $property->setValue($value, new ArrayCollection());
-                }
-            }*/
-            
-            
         }
 
         parent::offsetSet($key, $value);
@@ -102,12 +72,10 @@ class Container extends ZendSessionContainer
         }
 
         $class = $this->getName();
-
         if (is_a($value, $class, true)) {
             $om = $this->getObjectManager();
             if (!$om->contains($value)) {
                 $value = $om->merge($value);
-                //echo get_class($value->getHolidays());
             }
 
             $this->sessionVars[$key] = $value;
