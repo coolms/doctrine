@@ -80,7 +80,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
                 $override = array_replace($mapping, $override);
                 unset($meta->associationMappings[$fieldName]);
 
-            } else {
+            } elseif (!$meta->getReflectionClass()->isAbstract()) {
                 $class = $meta->getReflectionClass();
                 $prop = $class->getProperty($fieldName);
                 $prop->setAccessible(true);
