@@ -18,126 +18,41 @@ use Doctrine\Common\EventArgs,
 class TranslatableSubscriber extends TranslatableListener
 {
     /**
-     * @var string
+     * @var array
      */
-    protected $translationEntity = 'CmsDoctrineORM\\Mapping\\Translatable\\MappedSuperclass\\AbstractTranslation';
+    private $translations = [];
 
     /**
-     * @var string
-     */
-    protected $translatableEntity = 'CmsDoctrine\\Mapping\\Translatable\\TranslatableInterface';
-
-    /**
-     * @var string
-     */
-    private $defaultTranslationClass;
-
-    /**
-     * @param EventArgs $eventArgs
+     * {@inheritDoc}
      */
     public function loadClassMetadata(EventArgs $eventArgs)
     {
-        if (null === $this->defaultTranslationClass) {
-            $ea = $this->getEventAdapter($eventArgs);
-            $this->defaultTranslationClass = $ea->getDefaultTranslationClass();
-        }
-
         parent::loadClassMetadata($eventArgs);
 
-        $metadata = $eventArgs->getClassMetadata();
-        if ($metadata->isMappedSuperclass) {
+        $ea   = $this->getEventAdapter($eventArgs);
+        $meta = $eventArgs->getClassMetadata();
+        $name = $meta->getName();
+
+        if (isset(static::$configurations[$this->name][$name])) {
+            if ($name === $ea->getRootObjectClass($meta)) {
+                $translationClass = static::$configurations[$this->name][$name]['translationClass'];
+                $this->translations[$translationClass] = $name;
+                $ea->mapTranslatable($meta, $translationClass);
+            }
+
             return;
         }
 
-        $name   = $metadata->getName();
-        $rc     = $metadata->getReflectionClass();
-
-        if ($rc->hasProperty('translations')
-            && !$metadata->hasAssociation('translations')
-            && $rc->isSubclassOf($this->translatableEntity)
-        ) {
-            $config = $this->getConfiguration($eventArgs->getObjectManager(), $name);
-            if (isset($config['translationClass'])) {
-                $metadata->mapOneToMany([
-                    'targetEntity'  => $config['translationClass'],
-                    'fieldName'     => 'translations',
-                    'mappedBy'      => 'object',
-                    'orphanRemoval' => true,
-                    'cascade'       => ['persist','remove'],
-                    'fetch'         => 'EXTRA_LAZY',
-                ]);
-            }
-        } elseif ($rc->isSubclassOf($this->translationEntity)
-            && $rc->hasProperty('object')
-            && !$metadata->hasAssociation('object')
-            && ($translatable = $this->getTranslatableEntity($name))
-        ) {
-            $om = $eventArgs->getObjectManager();
-            $namingStrategy = $om->getConfiguration()->getNamingStrategy();
-
-            $metadata->mapManyToOne([
-                'targetEntity'  => $translatable,
-                'fieldName'     => 'object',
-                'inversedBy'    => 'translations',
-                'joinColumn'    => [
-                    'name'                  => $namingStrategy->joinColumnName('object'),
-                    'referencedColumnName'  => $namingStrategy->referenceColumnName(),
-                    'onDelete'              => 'CASCADE',
-                    'onUpdate'              => 'CASCADE',
-                ],
-            ]);
+        if (isset($this->translations[$name])) {
+            $ea->mapTranslation($meta, $this->translations[$name]);
         }
     }
 
     /**
-     * @param string $class
-     * @return closure
+     * {@inheritDoc}
      */
-    private function getTranslatableEntity($class)
+    protected function getNamespace()
     {
-        if (isset(self::$configurations[$this->name])
-            && ($result = array_filter(self::$configurations[$this->name], function($config) use ($class) {
-                return isset($config['translationClass']) && $config['translationClass'] === $class;
-            }))
-        ) {
-            return array_keys($result)[0];
-        }
-    }
-
-    /**
-     * {@iheritDoc}
-     */
-    public function getConfiguration(ObjectManager $objectManager, $class)
-    {
-        $config = parent::getConfiguration($objectManager, $class);
-
-        if (!empty($config['fields'])
-            && empty($config['translationClass'])
-            && !$this->isEntity($objectManager, $this->defaultTranslationClass)
-        ) {
-            return [];
-        }
-
-        return $config;
-    }
-
-    /**
-     * @param ObjectManager $objectManager
-     * @param string|object $class
-     *
-     * @return bool
-     */
-    public function isEntity(ObjectManager $objectManager, $class)
-    {
-        if (!$class) {
-            return false;
-        }
-        if (is_object($class)) {
-            $class = ($class instanceof Proxy)
-                ? get_parent_class($class)
-                : get_class($class);
-        }
-
-        return !$objectManager->getMetadataFactory()->isTransient($class);
+        return __NAMESPACE__;
     }
 }

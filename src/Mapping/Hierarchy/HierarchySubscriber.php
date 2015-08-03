@@ -16,106 +16,34 @@ use Doctrine\Common\EventArgs,
     Gedmo\Exception\InvalidMappingException,
     Gedmo\Tree\TreeListener;
 
+/**
+ * The hierarchy subscriber handles the synchronization of
+ * tree nodes. Can implement different
+ * strategies on handling the tree.
+ */
 class HierarchySubscriber extends TreeListener
 {
-    /**
-     * @var string
-     */
-    protected $targetEntity = 'CmsCommon\\Mapping\\Hierarchy\\HierarchyInterface';
-
     /**
      * @param EventArgs $eventArgs
      * @return void
      */
     public function loadClassMetadata(EventArgs $eventArgs)
     {
-        $metadata = $eventArgs->getClassMetadata();
-        $rc       = $metadata->getReflectionClass();
+        $meta = $eventArgs->getClassMetadata();
+        $ea = $this->getEventAdapter($eventArgs);
 
-        if ($metadata->isMappedSuperclass || !$rc->isSubclassOf($this->targetEntity)) {
-            return;
+        if (is_subclass_of($meta->getName(), $ea->getHierarchyClassName(), true)) {
+            $ea->mapHierarchy($meta);
         }
 
-        $name = $metadata->getName();
-        if ($metadata->isRootEntity() && !$metadata->hasAssociation('parent')) {
-            $metadata->mapManyToOne([
-                'targetEntity'  =>  $name,
-                'fieldName'     => 'parent',
-                'inversedBy'    => 'children',
-                'cascade'       => ['persist'],
-            ]);
-        }/* else {
-            $assoc  = $metadata->getAssociationMappings()['parent'];
-            $parent = $this->getParent($eventArgs, $metadata)->getName();
-            if ($parent !== $assoc['targetEntity']) {
-                unset($metadata->associationMappings['parent']);
-                $assoc['targetEntity'] = $parent;
-                $metadata->mapManyToOne($assoc);
-            }
-        }*/
-
-        if (!$metadata->hasAssociation('children')) {
-            $metadata->mapOneToMany([
-                'targetEntity'  => $name,
-                'fieldName'     => 'children',
-                'mappedBy'      => 'parent',
-                'orphanRemoval' => true,
-                'cascade'       => ['persist','remove'],
-                'fetch'         => 'EXTRA_LAZY',
-            ]);
-        } elseif ($metadata->subClasses) {
-            $assoc = $metadata->getAssociationMappings()['children'];
-            unset($metadata->associationMappings['children']);
-            $assoc['targetEntity'] = $name;
-            $metadata->mapOneToMany($assoc);
-        }
-
-        try {
-        	parent::loadClassMetadata($eventArgs);
-        } catch (InvalidMappingException $e) {
-            if (stripos($e->getMessage(), 'cannot find tree type for class') !== 0) {
-                throw $e;
-            }
-        }
+        parent::loadClassMetadata($eventArgs);
     }
 
     /**
-     * {@inheritDoc}
+     * {@inheritedDoc}
      */
-    public function getConfiguration(ObjectManager $objectManager, $class)
+    protected function getNamespace()
     {
-        try {
-            $config = parent::getConfiguration($objectManager, $class);
-        } catch (InvalidMappingException $e) {
-            if (stripos($e->getMessage(), 'cannot find tree type for class') === 0
-                && is_subclass_of($class, $this->targetEntity, true)
-            ) {
-                return [];
-            }
-            throw $e;
-        }
-
-        return $config;
-    }
-
-    /**
-     * @param EventArgs $eventArgs
-     * @param ClassMetadata $metadata
-     * @return ClassMetadata
-     */
-    protected function getParent(EventArgs $eventArgs, ClassMetadata $metadata)
-    {
-        if (!$metadata->isRootEntity()) {
-            $parent = $metadata->getReflectionClass()->getParentClass();
-            $parentMetadata = $eventArgs->getObjectManager()->getClassMetadata($parent->getName());
-
-            if (!$parentMetadata->isMappedSuperclass) {
-               return $parentMetadata;
-            }
-
-            return $this->getParent($eventArgs, $parentMetadata);
-        }
-
-        return $metadata;
+        return __NAMESPACE__;
     }
 }

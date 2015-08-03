@@ -11,11 +11,20 @@
 namespace CmsDoctrine\Mapping\Relation\Mapping\Driver;
 
 use Doctrine\Common\Persistence\Mapping\MappingException,
-    Gedmo\Mapping\Driver\AbstractAnnotationDriver,
-    CmsDoctrine\Mapping\Relation\RelationSubscriber;
+    Gedmo\Mapping\Driver\AbstractAnnotationDriver;
 
 class Annotation extends AbstractAnnotationDriver
 {
+    /**
+     * RelationOverrides annotation class
+     */
+    const RELATION_OVERRIDES_ANNOTATION = 'CmsDoctrine\\Mapping\\Annotation\\RelationOverrides';
+
+    /**
+     * RelationOverride annotation class
+     */
+    const RELATION_OVERRIDE_ANNOTATION = 'CmsDoctrine\\Mapping\\Annotation\\RelationOverride';
+
     /**
      * {@inheritDoc}
      *
@@ -24,16 +33,16 @@ class Annotation extends AbstractAnnotationDriver
     public function readExtendedMetadata($meta, array &$config)
     {
         $class = $this->getMetaReflectionClass($meta);
-        /* @var $relationOverrides \CmsDoctrine\Mapping\Relation\Annotation\RelationOverrides */
+        /* @var $relationOverrides \CmsDoctrine\Mapping\Annotation\RelationOverrides */
         if (!($relationOverrides = $this->reader->getClassAnnotation(
-            $class, RelationSubscriber::RELATION_OVERRIDES_ANNOTATION))
+            $class, static::RELATION_OVERRIDES_ANNOTATION))
         ) {
             return;
         }
 
         $config['relationOverrides'] = [];
 
-        /* @var $relationOverride \CmsDoctrine\Mapping\Relation\Annotation\RelationOverride */
+        /* @var $relationOverride \CmsDoctrine\Mapping\Annotation\RelationOverride */
         foreach ($relationOverrides->value as $relationOverride) {
             $fieldName = $relationOverride->name;
 

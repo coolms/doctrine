@@ -17,7 +17,7 @@ class Annotation extends AbstractAnnotationDriver
     /**
      * Discriminator entry annotation class
      */
-    const ENTRY_ANNOTATION = 'CmsDoctrine\Mapping\DiscriminatorEntry\Annotation\DiscriminatorEntry';
+    const ENTRY_ANNOTATION = 'CmsDoctrine\Mapping\Annotation\DiscriminatorEntry';
 
     /**
      * Our temporary map for calculations

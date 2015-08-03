@@ -10,8 +10,7 @@
 
 namespace CmsDoctrine\Mapping\Translatable;
 
-use Gedmo\Translatable\Translatable,
-    CmsDoctrineORM\Mapping\Translatable\MappedSuperclass\AbstractTranslation;
+use Gedmo\Translatable\Translatable;
 
 /**
  * Interface for the translatable entity
@@ -21,34 +20,34 @@ use Gedmo\Translatable\Translatable,
 interface TranslatableInterface extends Translatable
 {
     /**
-     * @return AbstractTranslation[]
+     * @return TranslationInterface[]
      */
     public function getTranslations();
 
     /**
-     * @param AbstractTranslation[] $translations
+     * @param TranslationInterface[] $translations
      */
     public function setTranslations($translations);
 
     /**
-     * @param AbstractTranslation[] $translations
+     * @param TranslationInterface[] $translations
      */
     public function addTranslations($translations);
 
     /**
-     * @param AbstractTranslation $translation
+     * @param TranslationInterface $translation
      */
-    public function addTranslation(AbstractTranslation $translation);
+    public function addTranslation(TranslationInterface $translation);
 
     /**
-     * @param AbstractTranslation[] $translations
+     * @param TranslationInterface[] $translations
      */
     public function removeTranslations($translations);
 
     /**
-     * @param AbstractTranslation $translation
+     * @param TranslationInterface $translation
      */
-    public function removeTranslation(AbstractTranslation $translation);
+    public function removeTranslation(TranslationInterface $translation);
 
     /**
      * Removes all translations

@@ -8,7 +8,7 @@
  * @author    Dmitry Popov <d.popov@altgraphic.com>
  */
 
-namespace CmsDoctrine\Mapping\Relation\Annotation;
+namespace CmsDoctrine\Mapping\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
 

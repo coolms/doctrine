@@ -10,15 +10,14 @@
 
 namespace CmsDoctrine\Mapping\Dateable\Mapping\Driver;
 
-use Gedmo\Timestampable\Mapping\Driver\Annotation as BaseAnnotation,
-    CmsDoctrine\Mapping\Dateable\TimestampableSubscriber;
+use Gedmo\Timestampable\Mapping\Driver\Annotation as TimestampableAnnotation;
 
-class Annotation extends BaseAnnotation
+class Annotation extends TimestampableAnnotation
 {
     /**
-     * Changeable class annotation
+     * Changeable annotation class
      */
-    const CHANGEABLE = TimestampableSubscriber::CHANGEABLE_ANNOTATION;
+    const CHANGEABLE_ANNOTATION = 'CmsDoctrine\\Mapping\\Annotation\\ChangeableObject';
 
     /**
      * Changeable property
@@ -32,12 +31,12 @@ class Annotation extends BaseAnnotation
     {
         $class = $this->getMetaReflectionClass($meta);
         if ($class->hasProperty(static::CHANGEABLE_PROPERTY)) {
-            $changeable = $this->reader->getClassAnnotation($class, static::CHANGEABLE);
+            $property = $class->getProperty(static::CHANGEABLE_PROPERTY);
+            $changeable = $this->reader->getClassAnnotation($class, static::CHANGEABLE_ANNOTATION);
             if (!empty($changeable->field)) {
-                $property = $class->getProperty(static::CHANGEABLE_PROPERTY);
                 if ($meta->isMappedSuperclass && !$property->isPrivate() ||
                     $meta->isInheritedField($property->name) ||
-                    isset($meta->associationMappings[$property->name]['inherited'])
+                    $meta->isInheritedAssociation($property->name)
                 ) {
                     $config['change'][] = [
                         'field' => $property->name,
@@ -46,9 +45,14 @@ class Annotation extends BaseAnnotation
                     ];
                 } else {
                     $timestampable = $this->reader->getPropertyAnnotation($property, static::TIMESTAMPABLE);
-                    if (!$timestampable->field) {
-                        $timestampable->field = $changeable->field;
-                    }
+                    $timestampable->field = $changeable->field;
+                    $timestampable->value = $changeable->value;
+                }
+            } else {
+                $timestampable = $this->reader->getPropertyAnnotation($property, static::TIMESTAMPABLE);
+                if (null === $timestampable->field) {
+                    $timestampable->field = [];
+                    $timestampable->value = null;
                 }
             }
         }

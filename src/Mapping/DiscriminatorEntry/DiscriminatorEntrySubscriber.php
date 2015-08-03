@@ -17,37 +17,6 @@ use Doctrine\Common\EventArgs,
 class DiscriminatorEntrySubscriber extends MappedEventSubscriber
 {
     /**
-     * Discriminator entry annotation class
-     */
-    const ENTRY_ANNOTATION = 'CmsDoctrine\Mapping\DiscriminatorEntry\Annotation\DiscriminatorEntry';
-
-    /**
-     * Discriminator entry annotation alias
-     */
-    const ENTRY_DOCUMENT_ANNOTATION_ALIAS = 'Doctrine\ODM\Mapping\DiscriminatorEntry';
-
-    /**
-     * Discriminator entry annotation alias
-     */
-    const ENTRY_ENTITY_ANNOTATION_ALIAS = 'Doctrine\ORM\Mapping\DiscriminatorEntry';
-
-    /**
-     * __construct
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        if (!class_exists(static::ENTRY_DOCUMENT_ANNOTATION_ALIAS)) {
-            class_alias(static::ENTRY_ANNOTATION, static::ENTRY_DOCUMENT_ANNOTATION_ALIAS);
-        }
-
-        if (!class_exists(static::ENTRY_ENTITY_ANNOTATION_ALIAS)) {
-            class_alias(static::ENTRY_ANNOTATION, static::ENTRY_ENTITY_ANNOTATION_ALIAS);
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getSubscribedEvents()

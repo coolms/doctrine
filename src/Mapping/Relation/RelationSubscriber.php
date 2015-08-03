@@ -21,60 +21,6 @@ use Doctrine\Common\EventArgs,
 class RelationSubscriber extends MappedEventSubscriber
 {
     /**
-     * RelationOverrides annotation class
-     */
-    const RELATION_OVERRIDES_ANNOTATION = 'CmsDoctrine\\Mapping\\Relation\\Annotation\\RelationOverrides';
-
-    /**
-     * RelationOverrides annotation alias
-     */
-    const RELATION_OVERRIDES_ODM_ANNOTATION_ALIAS = 'Doctrine\\ODM\\Mapping\\RelationOverrides';
-
-    /**
-     * RelationOverrides annotation alias
-     */
-    const RELATION_OVERRIDES_ORM_ANNOTATION_ALIAS = 'Doctrine\\ORM\\Mapping\\RelationOverrides';
-
-    /**
-     * RelationOverride annotation class
-     */
-    const RELATION_OVERRIDE_ANNOTATION = 'CmsDoctrine\\Mapping\\Relation\\Annotation\\RelationOverride';
-
-    /**
-     * RelationOverride annotation alias
-     */
-    const RELATION_OVERRIDE_ODM_ANNOTATION_ALIAS = 'Doctrine\\ODM\\Mapping\\RelationOverride';
-
-    /**
-     * RelationOverride annotation alias
-     */
-    const RELATION_OVERRIDE_ORM_ANNOTATION_ALIAS = 'Doctrine\\ORM\\Mapping\\RelationOverride';
-
-    /**
-     * __constructor
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        if (!class_exists(static::RELATION_OVERRIDES_ODM_ANNOTATION_ALIAS)) {
-            class_alias(static::RELATION_OVERRIDES_ANNOTATION, static::RELATION_OVERRIDES_ODM_ANNOTATION_ALIAS);
-        }
-
-        if (!class_exists(static::RELATION_OVERRIDES_ORM_ANNOTATION_ALIAS)) {
-            class_alias(static::RELATION_OVERRIDES_ANNOTATION, static::RELATION_OVERRIDES_ORM_ANNOTATION_ALIAS);
-        }
-
-        if (!class_exists(static::RELATION_OVERRIDE_ODM_ANNOTATION_ALIAS)) {
-            class_alias(static::RELATION_OVERRIDE_ANNOTATION, static::RELATION_OVERRIDE_ODM_ANNOTATION_ALIAS);
-        }
-
-        if (!class_exists(static::RELATION_OVERRIDE_ORM_ANNOTATION_ALIAS)) {
-            class_alias(static::RELATION_OVERRIDE_ANNOTATION, static::RELATION_OVERRIDE_ORM_ANNOTATION_ALIAS);
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     public function getSubscribedEvents()

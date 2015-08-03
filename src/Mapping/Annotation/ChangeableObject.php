@@ -8,7 +8,7 @@
  * @author    Dmitry Popov <d.popov@altgraphic.com>
  */
 
-namespace CmsDoctrine\Mapping\Dateable\Annotation;
+namespace CmsDoctrine\Mapping\Annotation;
 
 use Doctrine\Common\Annotations\Annotation;
 
@@ -16,7 +16,7 @@ use Doctrine\Common\Annotations\Annotation;
  * @Annotation
  * @Target("CLASS")
  */
-class Changeable extends Annotation
+class ChangeableObject extends Annotation
 {
     /**
      * @var string

@@ -8,19 +8,14 @@
  * @author    Dmitry Popov <d.popov@altgraphic.com>
  */
 
-namespace CmsDoctrine\Mapping\Relation\Annotation;
+namespace CmsDoctrine\Mapping\Hierarchy\Strategy\ORM;
 
-use Doctrine\Common\Annotations\Annotation;
+use Gedmo\Tree\Strategy\ORM\MaterializedPath as MaterializedPathStrategy;
 
 /**
- * This annotation is used to override association mappings of relationship properties.
- *
- * @author Dmitry Popov <d.popov@altgraphic.com>
- *
- * @Annotation
- * @Target("CLASS")
+ * {@inheritDoc}
  */
-class RelationOverrides extends Annotation
+class MaterializedPath extends MaterializedPathStrategy
 {
-    public $value;
+    // Nothing specific yet
 }

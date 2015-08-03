@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping\ClassMetadata,
     Doctrine\ORM\Mapping\JoinColumn,
     Doctrine\ORM\Mapping\MappingException,
     Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM,
-    CmsDoctrine\Mapping\Relation\Annotation\RelationOverride,
+    CmsDoctrine\Mapping\Annotation\RelationOverride,
     CmsDoctrine\Mapping\Relation\Mapping\Event\RelationAdapterInterface;
 
 /**
@@ -29,7 +29,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
      */
     public function mapRelations($meta, array $relationOverrides)
     {
-        /* @var $relationOverride \CmsDoctrine\Mapping\Relation\Annotation\RelationOverride */
+        /* @var $relationOverride \CmsDoctrine\Mapping\Annotation\RelationOverride */
         foreach ($relationOverrides as $relationOverride) {
             if (!(($fieldName = $relationOverride->name) &&
                 !$meta->isInheritedAssociation($fieldName))
@@ -39,7 +39,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
 
             $override = $this->relationToArray($relationOverride);
 
-            // Check for JoinColumn/JoinColumns annotations
+            // Check for JoinColumn|JoinColumns annotations
             if ($relationOverride->joinColumns) {
                 $override['joinColumns'] = [];
                 foreach ($associationOverride->joinColumns as $joinColumn) {

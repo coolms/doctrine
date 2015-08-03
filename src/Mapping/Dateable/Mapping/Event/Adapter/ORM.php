@@ -10,13 +10,13 @@
 
 namespace CmsDoctrine\Mapping\Dateable\Mapping\Event\Adapter;
 
-use Gedmo\Mapping\Event\Adapter\ORM as GedmoORMAdapter,
+use Gedmo\Mapping\Event\Adapter\ORM as EventAdapter,
     Gedmo\Timestampable\Mapping\Event\TimestampableAdapter;
 
 /**
  * Doctrine event adapter for ORM adapted for Dateable behavior
  */
-final class ORM extends GedmoORMAdapter implements TimestampableAdapter
+class ORM extends EventAdapter implements TimestampableAdapter
 {
     /**
      * {@inheritDoc}
@@ -29,5 +29,33 @@ final class ORM extends GedmoORMAdapter implements TimestampableAdapter
         }
 
         return new \DateTime();
+    }
+
+    /**
+     * Overriden. Added support for ManyToMany association changes
+     *
+     * {@inheritDoc}
+     */
+    public function getObjectChangeSet($uow, $object)
+    {
+        $changeSet = parent::getObjectChangeSet($uow, $object);
+        $meta = $this->getObjectManager()->getClassMetadata(get_class($object));
+        $refl = $meta->getReflectionClass();
+        $updates = $uow->getScheduledCollectionUpdates();
+        $delitions = $uow->getScheduledCollectionDeletions();
+        foreach ($meta->getAssociationNames() as $name) {
+            if ($meta->isSingleValuedAssociation($name)) {
+                continue;
+            }
+
+            $property = $refl->getProperty($name);
+            $property->setAccessible(true);
+            $assoc = $property->getValue($object);
+            if (in_array($assoc, $updates, true) || in_array($assoc, $delitions, true)) {
+                $changeSet[$name] = [$assoc, $assoc];
+            }
+        }
+
+        return $changeSet;
     }
 }

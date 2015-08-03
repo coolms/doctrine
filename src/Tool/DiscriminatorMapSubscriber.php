@@ -8,12 +8,12 @@
  * @author    Dmitry Popov <d.popov@altgraphic.com>
  */
 
-namespace CmsDoctrine\Mapping\DiscriminatorMap;
+namespace CmsDoctrine\Tool;
 
 use Doctrine\Common\EventArgs,
-    Gedmo\Mapping\MappedEventSubscriber;
+    Doctrine\Common\EventSubscriber;
 
-class DiscriminatorMapSubscriber extends MappedEventSubscriber
+class DiscriminatorMapSubscriber implements EventSubscriber
 {
     /**
      * @var array
@@ -44,7 +44,7 @@ class DiscriminatorMapSubscriber extends MappedEventSubscriber
     public function loadClassMetadata(EventArgs $eventArgs)
     {
         $meta = $eventArgs->getClassMetadata();
-        if ($meta->isMappedSuperclass || $meta->isInheritanceTypeNone()) {
+        if ($meta->isInheritanceTypeNone()) {
             return;
         }
 
