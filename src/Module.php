@@ -23,7 +23,9 @@ class Module implements
      */
     public function init(ModuleManagerInterface $moduleManager)
     {
+        $moduleManager->loadModule('CmsCommon');
         $moduleManager->loadModule('DoctrineModule');
+
         spl_autoload_register(function($class) {
             if (strpos($class, 'Doctrine\\ORM\\Mapping') === 0 ||
                 strpos($class, 'Doctrine\\ODM\\Mapping') === 0
