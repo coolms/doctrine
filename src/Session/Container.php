@@ -12,11 +12,9 @@ namespace CmsDoctrine\Session;
 
 use Zend\Session\Container as ZendSessionContainer,
     Zend\Session\ManagerInterface as Manager,
-    Doctrine\Common\Persistence\Event\LifecycleEventArgs,
+    Doctrine\Common\EventArgs,
     Doctrine\Common\Persistence\ObjectManager,
     DoctrineModule\Persistence\ProvidesObjectManager;
-use Doctrine\Common\Collections\Collection;
-use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
@@ -48,8 +46,8 @@ class Container extends ZendSessionContainer
     public function offsetSet($key, $value)
     {
         $class = $this->getName();
-        if (is_a($value, $class, true)) {
-            $om = $this->getObjectManager();
+        $om = $this->getObjectManager();
+        if (is_a($value, $class, true) && !$om->getMetadataFactory()->isTransient(get_class($value))) {
             if ($om->contains($value)) {
                 $om->detach($value);
             }
@@ -72,8 +70,8 @@ class Container extends ZendSessionContainer
         }
 
         $class = $this->getName();
-        if (is_a($value, $class, true)) {
-            $om = $this->getObjectManager();
+        $om = $this->getObjectManager();
+        if (is_a($value, $class, true) && !$om->getMetadataFactory()->isTransient(get_class($value))) {
             if (!$om->contains($value)) {
                 $value = $om->merge($value);
             }
@@ -109,16 +107,16 @@ class Container extends ZendSessionContainer
     }
 
     /**
-     * @param LifecycleEventArgs $args
+     * @param EventArgs $args
      */
-    public function postFlush(LifecycleEventArgs $args)
+    public function postFlush(EventArgs $args)
     {
         if ($this->sessionVars) {
-            $object = $args->getObject();
+            //$object = $args->getObject();
             foreach ($this->sessionVars as $key => $sessionVar) {
-                if ($object === $sessionVar) {
+                //if ($object === $sessionVar) {
                     unset($this->sessionVars[$key]);
-                }
+                //}
             }
         }
     }
