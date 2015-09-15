@@ -10,6 +10,8 @@
 
 namespace CmsDoctrine\Form\Element;
 
+use CmsDoctrine\Mapping\Translatable\TranslatableInterface;
+
 trait ObjectElementTrait
 {
     /**
@@ -47,6 +49,26 @@ trait ObjectElementTrait
         if (isset($findMethod['params'][$name])) {
             return $findMethod['params'][$name];
         }
+    }
+
+    /**
+     * @param  array $options
+     * @return Select
+     */
+    public function setValueOptions(array $options)
+    {
+        $targetClass = $this->getProxy()->getTargetClass();
+        $targetClass = $this->getProxy()->getObjectManager()->getClassMetadata($targetClass)->getName();
+
+        if (!empty($options) && is_a($targetClass, TranslatableInterface::class, true)) {
+            foreach ($options as $key => $optionSpec) {
+                if (is_array($optionSpec)) {
+                    $options[$key]['translator_disabled'] = true;
+                }
+            }
+        }
+
+        return parent::setValueOptions($options);
     }
 
     /**
