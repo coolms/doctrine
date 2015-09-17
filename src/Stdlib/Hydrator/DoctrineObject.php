@@ -22,21 +22,6 @@ class DoctrineObject extends BaseDoctrineObject
     /**
      * {@inheritDoc}
      */
-    protected function prepare($object)
-    {
-        if ($object instanceof Collection) {
-            $class = MetadataInterface::class;
-        } else {
-            $class = get_class($object);
-        }
-
-        $this->metadata = $this->objectManager->getClassMetadata($class);
-        $this->prepareStrategies();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     protected function extractByValue($object)
     {
         $fieldNames = $this->metadata->getFieldNames();
