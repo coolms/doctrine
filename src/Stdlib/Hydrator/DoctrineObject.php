@@ -10,13 +10,30 @@
 
 namespace CmsDoctrine\Stdlib\Hydrator;
 
-use DoctrineModule\Stdlib\Hydrator\DoctrineObject as BaseDoctrineObject;
+use Doctrine\Common\Collections\Collection,
+    DoctrineModule\Stdlib\Hydrator\DoctrineObject as BaseDoctrineObject;
+use CmsUserOrg\Mapping\MetadataInterface;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
  */
 class DoctrineObject extends BaseDoctrineObject
 {
+    /**
+     * {@inheritDoc}
+     */
+    protected function prepare($object)
+    {
+        if ($object instanceof Collection) {
+            $class = MetadataInterface::class;
+        } else {
+            $class = get_class($object);
+        }
+
+        $this->metadata = $this->objectManager->getClassMetadata($class);
+        $this->prepareStrategies();
+    }
+
     /**
      * {@inheritDoc}
      */
