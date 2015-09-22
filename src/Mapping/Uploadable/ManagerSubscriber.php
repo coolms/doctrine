@@ -326,7 +326,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
         }
 
         foreach ($this->uploadableSubscriberEvents as $event) {
-            if (!$em->hasListeners($event) || !in_array($this, $em->getListners($event), true)) {
+            if (!$em->hasListeners($event) || !in_array($this, $em->getListeners($event), true)) {
                 $em->addEventListener($event, $this);
             }
         }
