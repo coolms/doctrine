@@ -10,37 +10,37 @@
 
 namespace CmsDoctrine\Stdlib\Hydrator;
 
-use Doctrine\Common\Collections\Collection,
-    DoctrineModule\Stdlib\Hydrator\DoctrineObject as BaseDoctrineObject;
-use CmsUserOrg\Mapping\MetadataInterface;
+use DoctrineModule\Stdlib\Hydrator\DoctrineObject as DoctrineObjectHydrator;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
  */
-class DoctrineObject extends BaseDoctrineObject
+class DoctrineObject extends DoctrineObjectHydrator
 {
     /**
      * {@inheritDoc}
      */
     protected function extractByValue($object)
     {
-        $fieldNames = $this->metadata->getFieldNames();
         $methods    = get_class_methods($object);
         $filter     = $object instanceof FilterProviderInterface
             ? $object->getFilter()
             : $this->filterComposite;
 
         $data = parent::extractByValue($object);
+
+        $fieldNames = $this->metadata->getFieldNames();
         foreach ($fieldNames as $fieldName) {
-            if ($filter && !$filter->filter($fieldName) || !strpos($fieldName, '.')) {
+
+            if ($filter && !$filter->filter($fieldName) || false === strpos($fieldName, '.')) {
                 continue;
             }
 
             list($fieldName) = explode('.', $fieldName, 2);
             $getter = 'get' . ucfirst($fieldName);
 
-            $dataFieldName = $this->computeExtractFieldName($fieldName);
             if (in_array($getter, $methods)) {
+                $dataFieldName = $this->computeExtractFieldName($fieldName);
                 $data[$dataFieldName] = $this->extractValue($fieldName, $object->$getter(), $object);
             }
         }
@@ -61,7 +61,8 @@ class DoctrineObject extends BaseDoctrineObject
 
         $data = parent::extractByReference($object);
         foreach ($fieldNames as $fieldName) {
-            if ($filter && !$filter->filter($fieldName) || !strpos($fieldName, '.')) {
+
+            if ($filter && !$filter->filter($fieldName) || false === strpos($fieldName, '.')) {
                 continue;
             }
 

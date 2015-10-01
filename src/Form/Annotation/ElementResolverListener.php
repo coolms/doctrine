@@ -36,6 +36,7 @@ class ElementResolverListener extends AbstractListenerAggregate
     {
         $this->listeners[] = $events->attach('configureElement', [$this, 'resolveComposedTargetObject'], PHP_INT_MAX);
         $this->listeners[] = $events->attach('configureElement', [$this, 'resolveObjectSelectTargetClass'], PHP_INT_MAX);
+        $this->listeners[] = $events->attach('configureElement', [$this, 'handleHydratorAnnotation']);
     }
 
     /**
@@ -59,6 +60,9 @@ class ElementResolverListener extends AbstractListenerAggregate
 
         $metadata = $this->objectManager->getClassMetadata($formSpec['object']);
         $fieldName = $e->getParam('elementSpec')['spec']['name'];
+
+        $elementSpec = $e->getParam('elementSpec');
+        unset($elementSpec['spec']['hydrator']);
 
         if ($metadata->hasAssociation($fieldName)) {
             $e->setParam('annotation', new ComposedObject([
@@ -85,6 +89,27 @@ class ElementResolverListener extends AbstractListenerAggregate
                     'options'       => $annotation->getOptions(),
                 ],
             ]));
+        }
+    }
+
+    /**
+     * Handle the Hydrator annotation
+     *
+     * Removes the hydrator class from collection specification.
+     *
+     * @param  \Zend\EventManager\EventInterface $e
+     * @return void
+     */
+    public function handleHydratorAnnotation($e)
+    {
+        $annotation = $e->getParam('annotation');
+        if (!($annotation instanceof ComposedObject && $annotation->isCollection())) {
+            return;
+        }
+
+        $elementSpec = $e->getParam('elementSpec');
+        if (isset($elementSpec['spec']['hydrator'])) {
+            unset($elementSpec['spec']['hydrator']);
         }
     }
 
