@@ -13,19 +13,19 @@ namespace CmsDoctrine\Mapping\Annotation;
 use Doctrine\Common\Annotations\Annotation;
 
 /**
- * This annotation is used to override association mappings of relationship properties.
+ * This annotation is used to override the mapping of an embedded objects properties.
  *
  * @author Dmitry Popov <d.popov@altgraphic.com>
  *
  * @Annotation
  * @Target("CLASS")
  */
-class RelationOverrides extends Annotation
+class EmbeddedOverrides extends Annotation
 {
     /**
-     * Mapping overrides of relationship properties.
+     * One or more field or property mapping overrides.
      *
-     * @var array<\CmsDoctrine\Mapping\Annotation\RelationOverride>
+     * @var array<\CmsDoctrine\Mapping\Annotation\EmbeddedOverride>
      */
     public $value;
 }

@@ -10,6 +10,8 @@ return array(
     'CmsDoctrine\Form\Factory'                                                    => __DIR__ . '/src/Form/Factory.php',
     'CmsDoctrine\Mapping\Annotation\ChangeableObject'                             => __DIR__ . '/src/Mapping/Annotation/ChangeableObject.php',
     'CmsDoctrine\Mapping\DiscriminatorEntry\Annotation\DiscriminatorEntry'        => __DIR__ . '/src/Mapping/Annotation/DiscriminatorEntry.php',
+    'CmsDoctrine\Mapping\Annotation\EmbeddedOverride'                             => __DIR__ . '/src/Mapping/Annotation/EmbeddedOverride.php',
+    'CmsDoctrine\Mapping\Annotation\EmbeddedOverrides'                            => __DIR__ . '/src/Mapping/Annotation/EmbeddedOverrides.php',
     'CmsDoctrine\Mapping\Annotation\RelationOverride'                             => __DIR__ . '/src/Mapping/Annotation/RelationOverride.php',
     'CmsDoctrine\Mapping\Annotation\RelationOverrides'                            => __DIR__ . '/src/Mapping/Annotation/RelationOverrides.php',
     'CmsDoctrine\Mapping\Annotation\UploadableFile'                               => __DIR__ . '/src/Mapping/Annotation/UploadableFile.php',
