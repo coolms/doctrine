@@ -14,7 +14,8 @@ use Doctrine\Common\EventArgs,
     Doctrine\Common\NotifyPropertyChanged,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Gedmo\Blameable\BlameableListener,
-    CmsDoctrine\Mapping\Blameable\Mapping\Event\BlameableAdapterInterface;
+    CmsDoctrine\Mapping\Blameable\Mapping\Event\BlameableAdapterInterface,
+    CmsDoctrine\Mapping\Dateable\OnFlushTrait;
 
 /**
  * The Blameable subscriber.
@@ -23,6 +24,8 @@ use Doctrine\Common\EventArgs,
  */
 class BlameableSubscriber extends BlameableListener
 {
+    use OnFlushTrait;
+
     /**
      * @var string
      */

@@ -21,6 +21,8 @@ use Doctrine\Common\NotifyPropertyChanged,
  */
 class TimestampableSubscriber extends TimestampableListener
 {
+    use OnFlushTrait;
+
     /**
      * {@inheritDoc}
      */

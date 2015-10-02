@@ -25,6 +25,7 @@ return array(
     'CmsDoctrine\Mapping\Blameable\UpdatableInterface'                            => __DIR__ . '/src/Mapping/Blameable/UpdatableInterface.php',
     'CmsDoctrine\Mapping\Dateable\Mapping\Driver\Annotation'                      => __DIR__ . '/src/Mapping/Dateable/Mapping/Driver/Annotation.php',
     'CmsDoctrine\Mapping\Dateable\Mapping\Event\Adapter\ORM'                      => __DIR__ . '/src/Mapping/Dateable/Mapping/Event/Adapter/ORM.php',
+    'CmsDoctrine\Mapping\Dateable\OnFlushTrait'                                   => __DIR__ . '/src/Mapping/Dateable/OnFlushTrait.php',
     'CmsDoctrine\Mapping\Dateable\TimestampableSubscriber'                        => __DIR__ . '/src/Mapping/Dateable/TimestampableSubscriber.php',
     'CmsDoctrine\Mapping\DiscriminatorEntry\DiscriminatorEntrySubscriber'         => __DIR__ . '/src/Mapping/DiscriminatorEntry/DiscriminatorEntrySubscriber.php',
     'CmsDoctrine\Mapping\DiscriminatorEntry\Mapping\Driver\Annotation'            => __DIR__ . '/src/Mapping/DiscriminatorEntry/Mapping/Driver/Annotation.php',
