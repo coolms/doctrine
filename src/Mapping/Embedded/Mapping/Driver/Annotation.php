@@ -8,12 +8,12 @@
  * @author    Dmitry Popov <d.popov@altgraphic.com>
  */
 
-namespace CmsDoctrine\Mapping\Relation\Mapping\Driver;
+namespace CmsDoctrine\Mapping\Embedded\Mapping\Driver;
 
 use Doctrine\Common\Persistence\Mapping\MappingException,
     Gedmo\Mapping\Driver\AbstractAnnotationDriver,
-    CmsDoctrine\Mapping\Annotation\RelationOverride,
-    CmsDoctrine\Mapping\Annotation\RelationOverrides;
+    CmsDoctrine\Mapping\Annotation\EmbeddedOverride,
+    CmsDoctrine\Mapping\Annotation\EmbeddedOverrides;
 
 class Annotation extends AbstractAnnotationDriver
 {
@@ -25,16 +25,22 @@ class Annotation extends AbstractAnnotationDriver
     public function readExtendedMetadata($meta, array &$config)
     {
         $class = $this->getMetaReflectionClass($meta);
-        /* @var $relationOverrides RelationOverrides */
-        if (!($relationOverrides = $this->reader->getClassAnnotation($class, RelationOverrides::class))) {
+        /* @var $embeddedOverrides EmbeddedOverrides */
+        if (!($embeddedOverrides = $this->reader->getClassAnnotation($class, EmbeddedOverrides::class))) {
             return;
         }
 
-        $config['relationOverrides'] = [];
+        $config['embeddedOverrides'] = [];
 
-        /* @var $relationOverride RelationOverride */
-        foreach ($relationOverrides->value as $relationOverride) {
-            $fieldName = $relationOverride->name;
+        /* @var $embeddedOverride EmbeddedOverride */
+        foreach ($embeddedOverrides->value as $embeddedOverride) {
+            $fieldName = $embeddedOverride->name;
+
+            if (false === strpos($fieldName, '.')) {
+                continue;
+            }
+
+            list($fieldName, ) = explode('.', $fieldName);
 
             if (!$class->hasProperty($fieldName)) {
                 throw new MappingException(sprintf(
@@ -44,13 +50,13 @@ class Annotation extends AbstractAnnotationDriver
             }
 
             if ($meta->isMappedSuperclass && !$class->getProperty($fieldName)->isPrivate() ||
-                $meta->isInheritedField($fieldName) ||
-                $meta->hasField($fieldName))
-            {
+                $meta->isInheritedField($embeddedOverride->name) ||
+                !isset($meta->embeddedClasses[$fieldName])
+            ) {
                 continue;
             }
 
-            $config['relationOverrides'][] = $relationOverride;
+            $config['embeddedOverrides'][] = $embeddedOverride;
         }
     }
 }

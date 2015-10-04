@@ -8,17 +8,15 @@
  * @author    Dmitry Popov <d.popov@altgraphic.com>
  */
 
-namespace CmsDoctrine\Mapping\Relation;
+namespace CmsDoctrine\Mapping\Embedded;
 
 use Doctrine\Common\EventArgs,
-    Doctrine\Common\EventManager,
-    Doctrine\ORM\Tools\ResolveTargetEntityListener,
     Gedmo\Mapping\MappedEventSubscriber;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
  */
-class RelationSubscriber extends MappedEventSubscriber
+class OverrideSubscriber extends MappedEventSubscriber
 {
     /**
      * {@inheritDoc}
@@ -43,8 +41,8 @@ class RelationSubscriber extends MappedEventSubscriber
         $this->loadMetadataForObjectClass($om, $meta);
 
         $name = $meta->getName();
-        if (!empty(self::$configurations[$this->name][$name]['relationOverrides'])) {
-            $ea->mapRelations($meta, self::$configurations[$this->name][$name]['relationOverrides']);
+        if (!empty(self::$configurations[$this->name][$name]['embeddedOverrides'])) {
+            $ea->mapFields($meta, self::$configurations[$this->name][$name]['embeddedOverrides']);
         }
     }
 
