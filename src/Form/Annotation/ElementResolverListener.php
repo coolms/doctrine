@@ -58,11 +58,11 @@ class ElementResolverListener extends AbstractListenerAggregate
             return;
         }
 
-        $metadata = $this->objectManager->getClassMetadata($formSpec['object']);
-        $fieldName = $e->getParam('elementSpec')['spec']['name'];
-
         $elementSpec = $e->getParam('elementSpec');
         unset($elementSpec['spec']['hydrator']);
+
+        $metadata = $this->objectManager->getClassMetadata($formSpec['object']);
+        $fieldName = $elementSpec['spec']['name'];
 
         if ($metadata->hasAssociation($fieldName)) {
             $e->setParam('annotation', new ComposedObject([
