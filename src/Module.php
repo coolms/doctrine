@@ -10,7 +10,9 @@
 
 namespace CmsDoctrine;
 
-use Zend\ModuleManager\Feature\AutoloaderProviderInterface,
+use Zend\Loader\ClassMapAutoloader,
+    Zend\Loader\StandardAutoloader,
+    Zend\ModuleManager\Feature\AutoloaderProviderInterface,
     Zend\ModuleManager\Feature\InitProviderInterface,
     Zend\ModuleManager\ModuleManagerInterface;
 
@@ -51,10 +53,10 @@ class Module implements
     public function getAutoloaderConfig()
     {
         return [
-            'Zend\Loader\ClassMapAutoloader' => [
+            ClassMapAutoloader::class => [
                 __DIR__ . '/../autoload_classmap.php',
             ],
-            'Zend\Loader\StandardAutoloader' => [
+            StandardAutoloader::class => [
                 'fallback_autoloader' => true,
                 'namespaces' => [
                     __NAMESPACE__ => __DIR__,
