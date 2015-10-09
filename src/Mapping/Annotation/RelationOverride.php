@@ -65,11 +65,18 @@ class RelationOverride extends Annotation
     public $mappedBy;
 
     /**
-     * The join column that is being mapped to the persistent attribute.
+     * The join columns that is being mapped to the persistent attribute.
      *
      * @var array<\Doctrine\ORM\Mapping\JoinColumn>
      */
     public $joinColumns;
+
+    /**
+     * The join column that is being mapped to the persistent attribute.
+     *
+     * @var \Doctrine\ORM\Mapping\JoinColumn
+     */
+    public $joinColumn;
 
     /**
      * The join table that maps the relationship.

@@ -42,9 +42,11 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
             // Check for JoinColumn|JoinColumns annotations
             if ($relationOverride->joinColumns) {
                 $override['joinColumns'] = [];
-                foreach ($associationOverride->joinColumns as $joinColumn) {
+                foreach ($relationOverride->joinColumns as $joinColumn) {
                     $override['joinColumns'][] = $this->joinColumnToArray($joinColumn);
                 }
+            } elseif ($relationOverride->joinColumn) {
+                $override['joinColumns'][] = $this->joinColumnToArray($relationOverride->joinColumn);
             }
 
             // Check for JoinTable annotations
@@ -180,7 +182,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
     private function relationToArray(RelationOverride $relation)
     {
         if ($relation->type && !is_numeric($relation->type)) {
-            $relation->type = constant("\Doctrine\ORM\Mapping\ClassMetadata::{$relation->type}");
+            $relation->type = constant(ClassMetadata::class . '::' . $relation->type);
         }
 
         return array_filter([
