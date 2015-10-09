@@ -10,7 +10,10 @@
 
 namespace CmsDoctrine\Mapping\Uploadable\Mapping\Driver;
 
-use Gedmo\Mapping\Driver\AbstractAnnotationDriver;
+use Gedmo\Mapping\Driver\AbstractAnnotationDriver,
+    CmsDoctrine\Mapping\Annotation\UploadableFile,
+    CmsDoctrine\Mapping\Annotation\UploadableFileInfo,
+    CmsDoctrine\Mapping\Annotation\UploadableManager;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
@@ -20,9 +23,9 @@ class Annotation extends AbstractAnnotationDriver
     /**
      * Annotation to define that this object is uploadable manager
      */
-    const UPLOADABLE_FILE       = 'CmsDoctrine\\Mapping\\Annotation\\UploadableFile';
-    const UPLOADABLE_FILE_INFO  = 'CmsDoctrine\\Mapping\\Annotation\\UploadableFileInfo';
-    const UPLOADABLE_MANAGER    = 'CmsDoctrine\\Mapping\\Annotation\\UploadableManager';
+    const UPLOADABLE_FILE       = UploadableFile::class;
+    const UPLOADABLE_FILE_INFO  = UploadableFileInfo::class;
+    const UPLOADABLE_MANAGER    = UploadableManager::class;
 
     /**
      * {@inheritDoc}

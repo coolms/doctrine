@@ -40,7 +40,7 @@ class TranslatableSubscriber extends TranslatableListener
                 $ea->mapTranslatable($meta, $translationClass);
             }
 
-            return;
+            //return;
         }
 
         if (isset($this->translations[$name])) {

@@ -10,7 +10,8 @@
 
 namespace CmsDoctrine\Mapping\Translatable\Mapping\Driver;
 
-use Gedmo\Translatable\Mapping\Driver\Annotation as AnnotationDriver;
+use Gedmo\Translatable\Mapping\Driver\Annotation as AnnotationDriver,
+    CmsDoctrine\Mapping\Translatable\TranslationInterface;
 
 /**
  * {@inheritDoc}
@@ -20,7 +21,7 @@ class Annotation extends AnnotationDriver
     /**
      * @var string
      */
-    protected $defaultTransaltionClass = 'CmsDoctrine\\Mapping\\Translatable\\TranslationInterface';
+    protected $defaultTransaltionClass = TranslationInterface::class;
 
     /**
      * {@inheritDoc}

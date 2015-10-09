@@ -14,8 +14,11 @@ use Doctrine\Common\EventArgs,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM,
     Gedmo\Tool\Wrapper\AbstractWrapper,
+    Gedmo\Translatable\Entity\MappedSuperclass\AbstractPersonalTranslation,
     Gedmo\Translatable\Mapping\Event\Adapter\ORM as EventAdapter,
-    CmsDoctrine\Mapping\Translatable\Mapping\Event\TranslatableAdapterInterface;
+    CmsDoctrine\Mapping\Translatable\Mapping\Event\TranslatableAdapterInterface,
+    CmsDoctrine\Mapping\Translatable\TranslatableInterface,
+    CmsDoctrine\Mapping\Translatable\TranslationInterface;
 
 /**
  * Doctrine event adapter for ORM adapted for Translatable behavior
@@ -25,17 +28,17 @@ class ORM extends BaseAdapterORM implements TranslatableAdapterInterface
     /**
      * @var string
      */
-    protected $translatableClass = 'CmsDoctrine\\Mapping\\Translatable\\TranslatableInterface';
+    protected $translatableClass = TranslatableInterface::class;
 
     /**
      * @var string
      */
-    protected $defaultTranslationClass = 'CmsDoctrine\\Mapping\\Translatable\\TranslationInterface';
+    protected $defaultTranslationClass = TranslationInterface::class;
 
     /**
      * @var string
      */
-    private $personalTranslation = 'Gedmo\\Translatable\\Entity\\MappedSuperclass\\AbstractPersonalTranslation';
+    private $personalTranslation = AbstractPersonalTranslation::class;
 
     /**
      * @var EventAdapter
