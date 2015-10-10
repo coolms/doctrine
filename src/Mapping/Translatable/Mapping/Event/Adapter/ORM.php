@@ -58,24 +58,25 @@ class ORM extends BaseAdapterORM implements TranslatableAdapterInterface
      */
     public function mapTranslatable(ClassMetadata $meta, $translationClassName)
     {
-        if ($meta->hasAssociation('translations')) {
-            return;
-        }
-
         $rc = $meta->getReflectionClass();
-        if (!$rc->isSubclassOf($this->translatableClass) || !$rc->hasProperty('translations')) {
+        if (!$rc->hasProperty('translations') ||
+            $meta->hasAssociation('translations') ||
+            !$rc->isSubclassOf($this->translatableClass)
+        ) {
             return;
         }
 
-        $meta->mapOneToMany([
-            'targetEntity'  => $translationClassName,
-            'fieldName'     => 'translations',
-            'mappedBy'      => 'object',
-            'orphanRemoval' => true,
-            'cascade'       => ['persist','remove'],
-            'fetch'         => 'EXTRA_LAZY',
-            'inherited'     => $this->getRootObjectClass($meta),
-        ]);
+        if (!$meta->hasAssociation('translations')) {
+            $meta->mapOneToMany([
+                'targetEntity'  => $translationClassName,
+                'fieldName'     => 'translations',
+                'mappedBy'      => 'object',
+                'orphanRemoval' => true,
+                'cascade'       => ['persist','remove'],
+                'fetch'         => 'EXTRA_LAZY',
+                'inherited'     => $this->getRootObjectClass($meta),
+            ]);
+        }
     }
 
     /**
@@ -83,8 +84,10 @@ class ORM extends BaseAdapterORM implements TranslatableAdapterInterface
      */
     public function mapTranslation(ClassMetadata $meta, $translatableClassName)
     {
-        if ($meta->hasAssociation('object') ||
-            !$meta->getReflectionClass()->isSubclassOf($this->personalTranslation)
+        $rc = $meta->getReflectionClass();
+        if (!$rc->hasProperty('object') ||
+            $meta->hasAssociation('object') ||
+            !$rc->isSubclassOf($this->personalTranslation)
         ) {
             return;
         }
@@ -94,6 +97,7 @@ class ORM extends BaseAdapterORM implements TranslatableAdapterInterface
             'targetEntity'  => $translatableClassName,
             'fieldName'     => 'object',
             'inversedBy'    => 'translations',
+            'isOwningSide'  => true,
             'joinColumns'   => [[
                 'name'                  => $namingStrategy->joinColumnName('object'),
                 'referencedColumnName'  => $namingStrategy->referenceColumnName(),

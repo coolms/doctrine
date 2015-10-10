@@ -27,24 +27,26 @@ class TranslatableSubscriber extends TranslatableListener
      */
     public function loadClassMetadata(EventArgs $eventArgs)
     {
-        parent::loadClassMetadata($eventArgs);
-
         $ea   = $this->getEventAdapter($eventArgs);
         $meta = $eventArgs->getClassMetadata();
         $name = $meta->getName();
+
+        if (isset($this->translations[$name])) {
+            $ea->mapTranslation($meta, $this->translations[$name]);
+            unset($this->translations[$name]);
+            return;
+        }
+
+        parent::loadClassMetadata($eventArgs);
 
         if (isset(static::$configurations[$this->name][$name])) {
             if ($name === $ea->getRootObjectClass($meta)) {
                 $translationClass = static::$configurations[$this->name][$name]['translationClass'];
                 $this->translations[$translationClass] = $name;
+                // load translation class metadata if not loaded yet
+                $ea->getObjectManager()->getClassMetadata($translationClass);
                 $ea->mapTranslatable($meta, $translationClass);
             }
-
-            //return;
-        }
-
-        if (isset($this->translations[$name])) {
-            $ea->mapTranslation($meta, $this->translations[$name]);
         }
     }
 
