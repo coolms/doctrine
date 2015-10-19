@@ -78,10 +78,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
      */
     public function getSubscribedEvents()
     {
-        return [
-            'loadClassMetadata',
-            'onFlush',
-        ];
+        return ['loadClassMetadata', 'onFlush'];
     }
 
     /**
@@ -189,7 +186,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
             $file     = $this->createFile($fileClass, $fileInfoArray, $pathGenerator);
             $fileInfo = $this->createFileInfo($fileInfoClass, $fileInfoArray);
             $uploadableSubscriber->addEntityFileInfo($file, $fileInfo);
-            $files[] = $file;
+            $files[]  = $file;
         }
 
         if ($config['associatedFiles']) {

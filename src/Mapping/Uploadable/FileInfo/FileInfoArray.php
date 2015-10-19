@@ -49,7 +49,7 @@ class FileInfoArray extends BaseFileInfoArray
     }
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function isUploadedFile()
     {

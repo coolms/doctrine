@@ -37,7 +37,7 @@ class Container extends ZendSessionContainer
     {
         parent::__construct($name, $manager);
         $this->setObjectManager($objectManager);
-        $objectManager->getEventManager()->addEventListener(['postFlush'], $this);
+        $objectManager->getEventManager()->addEventListener(['onFlush'], $this);
     }
 
     /**
@@ -109,7 +109,7 @@ class Container extends ZendSessionContainer
     /**
      * @param EventArgs $args
      */
-    public function postFlush(EventArgs $args)
+    public function onFlush(EventArgs $args)
     {
         if ($this->sessionVars) {
             //$object = $args->getObject();

@@ -20,7 +20,6 @@ use Behat\Transliterator\Transliterator,
  *
  * @author Dmitry Popov <d.popov@altgrapphic.com>
  */
-
 class Urlizer implements FilenameGeneratorInterface
 {
     /**
