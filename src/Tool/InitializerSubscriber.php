@@ -50,8 +50,15 @@ class InitializerSubscriber implements EventSubscriber
      */
     public function postLoad(EventArgs $eventArgs)
     {
-        $entity = $eventArgs->getEntity();
-        $this->initializer->initialize($entity, $this->getServiceLocator());
+        $this->initialize($eventArgs->getObject());
+    }
+
+    /**
+     * @param object $object
+     */
+    public function initialize($object)
+    {
+        $this->initializer->initialize($object, $this->getServiceLocator());
     }
 
     /**

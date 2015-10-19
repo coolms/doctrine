@@ -25,6 +25,7 @@ use ArrayObject,
     Gedmo\Uploadable\Event\UploadablePreFileProcessEventArgs,
     Gedmo\Uploadable\FileInfo\FileInfoInterface,
     CmsCommon\Stdlib\ArrayUtils,
+    CmsDoctrine\Mapping\Uploadable\FileInfo\FileInfoArray,
     CmsDoctrine\Mapping\Uploadable\PathGenerator\PathGeneratorInterface;
 
 /**
@@ -321,7 +322,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
             }
 
             if (!$this->uploadableSubscriber) {
-                throw new RuntimeException('UploadableSubscriber can\'t be found');
+                throw new RuntimeException("UploadableSubscriber can't be found");
             }
         }
 
@@ -337,7 +338,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
      */
     public function setUploadableSubscriber(UploadableSubscriber $subscriber)
     {
-        $subscriber->setDefaultFileInfoClass('CmsDoctrine\\Mapping\\Uploadable\\FileInfo\\FileInfoArray');
+        $subscriber->setDefaultFileInfoClass(FileInfoArray::class);
         $this->uploadableSubscriber = $subscriber;
     }
 
