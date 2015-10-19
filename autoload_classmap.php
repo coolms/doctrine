@@ -68,6 +68,7 @@ return array(
     'CmsDoctrine\Session\Container'                                               => __DIR__ . '/src/Session/Container.php',
     'CmsDoctrine\Stdlib\Hydrator\DoctrineObject'                                  => __DIR__ . '/src/Stdlib/Hydrator/DoctrineObject.php',
     'CmsDoctrine\Tool\DiscriminatorMapSubscriber'                                 => __DIR__ . '/src/Tool/DiscriminatorMapSubscriber.php',
+    'CmsDoctrine\Tool\InitializerSubscriber'                                      => __DIR__ . '/src/Tool/InitializerSubscriber.php',
     'CmsDoctrine\Validator\AnyObjectExists'                                       => __DIR__ . '/src/Validator/AnyObjectExists.php',
     'CmsDoctrineTest\Framework\TestCase'                                          => __DIR__ . '/tests/CmsDoctrine/Framework/TestCase.php',
     'CmsDoctrineTest\SampleTest'                                                  => __DIR__ . '/tests/CmsDoctrine/SampleTest.php',
