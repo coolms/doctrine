@@ -14,7 +14,8 @@ use Zend\Session\Container as ZendSessionContainer,
     Zend\Session\ManagerInterface as Manager,
     Doctrine\Common\EventArgs,
     Doctrine\Common\Persistence\ObjectManager,
-    DoctrineModule\Persistence\ProvidesObjectManager;
+    DoctrineModule\Persistence\ProvidesObjectManager,
+    Gedmo\Mapping\Event\AdapterInterface;
 
 /**
  * @author Dmitry Popov <d.popov@altgraphic.com>
@@ -27,6 +28,13 @@ class Container extends ZendSessionContainer
      * @var array
      */
     private $sessionVars = [];
+
+    /**
+     * Event adapters
+     *
+     * @var array
+     */
+    private $adapters = [];
 
     /**
      * {@inheritDoc}
@@ -112,12 +120,38 @@ class Container extends ZendSessionContainer
     public function onFlush(EventArgs $args)
     {
         if ($this->sessionVars) {
-            //$object = $args->getObject();
-            foreach ($this->sessionVars as $key => $sessionVar) {
-                //if ($object === $sessionVar) {
-                    unset($this->sessionVars[$key]);
-                //}
+            $ea = $this->getEventAdapter($args);
+            $om = $this->getObjectManager();
+            $uow = $om->getUnitOfWork();
+
+            if ($objects = $ea->getScheduledObjectInsertions($uow)) {
+                $this->sessionVars = array_filter($this->sessionVars, function($object) use ($objects) {
+                    return !in_array($object, $objects, true);
+                });
             }
         }
+    }
+
+    /**
+     * Get an event adapter to handle event specific methods
+     *
+     * @param EventArgs $args
+     * @throws \InvalidArgumentException - if event is not recognized
+     * @return AdapterInterface
+     */
+    protected function getEventAdapter(EventArgs $args)
+    {
+        $class = get_class($args);
+        if (preg_match('@Doctrine\\\([^\\\]+)@', $class, $m) && in_array($m[1], ['ODM', 'ORM'])) {
+            if (!isset($this->adapters[$m[1]])) {
+                $adapterClass = 'Gedmo\\Mapping\\Event\\Adapter\\' . $m[1];
+                $this->adapters[$m[1]] = new $adapterClass();
+            }
+
+            $this->adapters[$m[1]]->setEventArgs($args);
+            return $this->adapters[$m[1]];
+        }
+
+        throw new \InvalidArgumentException('Session continaer does not support event arg class: ' . $class);
     }
 }
