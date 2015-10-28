@@ -130,7 +130,8 @@ class ElementResolverListener extends AbstractListenerAggregate
         }
 
         if (isset($elementSpec['spec']['options']['target_class']) &&
-            class_exists($elementSpec['spec']['options']['target_class'])
+            class_exists($elementSpec['spec']['options']['target_class']) ||
+            empty($formSpec['object'])
         ) {
             return;
         }
