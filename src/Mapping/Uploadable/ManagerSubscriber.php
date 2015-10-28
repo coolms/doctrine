@@ -14,6 +14,7 @@ use ArrayObject,
     Zend\EventManager\EventManagerAwareInterface,
     Zend\EventManager\EventManagerAwareTrait,
     Zend\EventManager\EventManagerInterface,
+    Doctrine\Common\Collections\Collection,
     Doctrine\Common\EventArgs,
     Doctrine\Common\NotifyPropertyChanged,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
@@ -150,7 +151,11 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
         }
 
         $om   = $ea->getObjectManager();
-        $meta = $om->getClassMetadata(get_class($object));
+        if ($object instanceof Collection) {
+            $meta = $om->getClassMetadata($config["useObjectClass"]);
+        } else {
+            $meta = $om->getClassMetadata(get_class($object));
+        }
 
         $uploads = $this->getPropertyValueFromObject($meta, $config['fileInfoField'], $object);
 
