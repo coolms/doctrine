@@ -115,14 +115,14 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
                 $assocMeta = $om->getClassMetadata($targetClass);
                 if ($config = $this->getConfiguration($om, $assocMeta->getName())) {
                     if ($meta->isSingleValuedAssociation($assocName)) {
-                        $this->processFileUploads(
+                        $this->flushFileUploads(
                             $ea,
                             $config,
                             $this->getPropertyValueFromObject($meta, $assocName, $object)
                         );
                     } else {
                         foreach ($this->getPropertyValueFromObject($meta, $assocName, $object) as $manager) {
-                            $this->processFileUploads($ea, $config, $manager);
+                            $this->flushFileUploads($ea, $config, $manager);
                         }
                     }
                 }
@@ -139,7 +139,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
      * @throws \RuntimeException
      * @return array
      */
-    protected function processFileUploads(AdapterInterface $ea, array &$config, $object)
+    protected function flushFileUploads(AdapterInterface $ea, array &$config, $object)
     {
         $files = [];
         $config['associatedFiles'] = false;
