@@ -115,15 +115,27 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
                 $assocMeta = $om->getClassMetadata($targetClass);
                 if ($config = $this->getConfiguration($om, $assocMeta->getName())) {
                     if ($meta->isSingleValuedAssociation($assocName)) {
-                        $this->flushFileUploads(
-                            $ea,
-                            $config,
-                            $this->getPropertyValueFromObject($meta, $assocName, $object)
-                        );
+                        $manager = $this->getPropertyValueFromObject($meta, $assocName, $object);
+                        $this->flushFileUploads($ea, $config, $manager);
+                        $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $manager);
+
+                        /*if ($config['associatedFiles']) {
+                            $om->persist($manager);
+                            $om->flush($manager);
+                            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $manager);
+                        }*/
+
                     } else {
-                        foreach ($this->getPropertyValueFromObject($meta, $assocName, $object) as $manager) {
+                        $container = $this->getPropertyValueFromObject($meta, $assocName, $object);
+                        foreach ($container as $manager) {
                             $this->flushFileUploads($ea, $config, $manager);
                         }
+
+                        /*if ($config['associatedFiles']) {
+                            $om->persist($object);
+                            $om->flush($object);
+                            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $object);
+                        }*/
                     }
                 }
             }
@@ -137,7 +149,6 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
      * @param array $config
      * @param object $object
      * @throws \RuntimeException
-     * @return array
      */
     protected function flushFileUploads(AdapterInterface $ea, array &$config, $object)
     {
@@ -189,9 +200,10 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
         }
 
         if ($config['associatedFiles']) {
+            $uow = $om->getUnitOfWork();
             $value = $meta->isCollectionValuedAssociation($config['fileField']) ? $files : $file;
-            $this->updateField($object, $om->getUnitOfWork(), $ea, $meta, $config['fileField'], $value);
-            
+            $this->updateField($object, $uow, $ea, $meta, $config['fileField'], $value);
+            $ea->recomputeSingleObjectChangeSet($uow, $meta, $object);
         }
 
         if (!empty($files)) {
@@ -200,14 +212,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
 
         foreach ($files as $file) {
             $om->persist($file);
-        }
-
-        if ($config['associatedFiles']) {
-            $om->persist($object);
-            $om->flush($object);
-            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $object);
-        } else {
-            $om->flush();
+            $om->flush($file);
         }
     }
 

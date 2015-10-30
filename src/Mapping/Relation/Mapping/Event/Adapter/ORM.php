@@ -74,7 +74,7 @@ final class ORM extends BaseAdapterORM implements RelationAdapterInterface
                     !$this->guardAssociationTypeOverride($mapping['type'], $override['type'])
                 ) {
                     throw new MappingException(sprintf(
-                        'Can\'t override mapping type of %s',
+                        'Cannot override mapping type of %s',
                         $meta->getName() . '::$' . $fieldName
                     ));
                 }
