@@ -114,18 +114,16 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
                 $targetClass = $meta->getAssociationTargetClass($assocName);
                 $assocMeta = $om->getClassMetadata($targetClass);
                 if ($config = $this->getConfiguration($om, $assocMeta->getName())) {
-                    $manager = $this->getPropertyValueFromObject($meta, $assocName, $object);
-                    $files = $this->processFileUploads($ea, $config, $manager);
-                    foreach ($files as $file) {
-                        $om->persist($file);
-                    }
-
-                    if ($config['associatedFiles']) {
-                        $om->persist($manager);
-                        $om->flush($manager);
-                        $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $manager);
+                    if ($meta->isSingleValuedAssociation($assocName)) {
+                        $this->processFileUploads(
+                            $ea,
+                            $config,
+                            $this->getPropertyValueFromObject($meta, $assocName, $object)
+                        );
                     } else {
-                        $om->flush();
+                        foreach ($this->getPropertyValueFromObject($meta, $assocName, $object) as $manager) {
+                            $this->processFileUploads($ea, $config, $manager);
+                        }
                     }
                 }
             }
@@ -147,21 +145,17 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
         $config['associatedFiles'] = false;
 
         if (empty($config['uploadable'])) {
-            return $files;
+            return;
         }
 
         $om   = $ea->getObjectManager();
-        if ($object instanceof Collection) {
-            $meta = $om->getClassMetadata($config["useObjectClass"]);
-        } else {
-            $meta = $om->getClassMetadata(get_class($object));
-        }
+        $meta = $om->getClassMetadata(get_class($object));
 
         $uploads = $this->getPropertyValueFromObject($meta, $config['fileInfoField'], $object);
 
         if (!is_array($uploads) || !ArrayUtils::filterRecursive($uploads, null, true)) {
             // No uploaded files
-            return $files;
+            return;
         }
 
         if (empty($config['fileField']) || !$meta->hasAssociation($config['fileField'])) {
@@ -204,7 +198,17 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
             $this->getEventManager()->trigger(__FUNCTION__, $this, $files);
         }
 
-        return $files;
+        foreach ($files as $file) {
+            $om->persist($file);
+        }
+
+        if ($config['associatedFiles']) {
+            $om->persist($object);
+            $om->flush($object);
+            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $object);
+        } else {
+            $om->flush();
+        }
     }
 
     /**
