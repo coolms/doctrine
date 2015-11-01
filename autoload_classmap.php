@@ -46,6 +46,7 @@ return array(
     'CmsDoctrine\Mapping\Metadatable\MetadatableInterface'                        => __DIR__ . '/src/Mapping/Metadatable/MetadatableInterface.php',
     'CmsDoctrine\Mapping\Metadatable\MetadatableSubscriber'                       => __DIR__ . '/src/Mapping/Metadatable/MetadatableSubscriber.php',
     'CmsDoctrine\Mapping\Metadatable\MetadataInterface'                           => __DIR__ . '/src/Mapping/Metadatable/MetadataInterface.php',
+    'CmsDoctrine\Mapping\NotifyPropertyChangedTrait'                              => __DIR__ . '/src/Mapping/NotifyPropertyChangedTrait.php',
     'CmsDoctrine\Mapping\Relation\Mapping\Driver\Annotation'                      => __DIR__ . '/src/Mapping/Relation/Mapping/Driver/Annotation.php',
     'CmsDoctrine\Mapping\Relation\Mapping\Event\Adapter\ORM'                      => __DIR__ . '/src/Mapping/Relation/Mapping/Event/Adapter/ORM.php',
     'CmsDoctrine\Mapping\Relation\Mapping\Event\RelationAdapterInterface'         => __DIR__ . '/src/Mapping/Relation/Mapping/Event/RelationAdapterInterface.php',
