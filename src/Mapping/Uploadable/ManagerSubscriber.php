@@ -109,36 +109,27 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
         // check all scheduled insertions and updates
         foreach ($objects as $object) {
             $meta = $om->getClassMetadata(get_class($object));
-            $assocNames = $meta->getAssociationNames();
-            foreach ($assocNames as $assocName) {
-                $targetClass = $meta->getAssociationTargetClass($assocName);
-                $assocMeta = $om->getClassMetadata($targetClass);
-                if ($config = $this->getConfiguration($om, $assocMeta->getName())) {
-                    if ($meta->isSingleValuedAssociation($assocName)) {
-                        $manager = $this->getPropertyValueFromObject($meta, $assocName, $object);
-                        $this->flushFileUploads($ea, $config, $manager);
-                        $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $manager);
-
-                        /*if ($config['associatedFiles']) {
-                            $om->persist($manager);
-                            $om->flush($manager);
-                            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $manager);
-                        }*/
-
-                    } else {
-                        $container = $this->getPropertyValueFromObject($meta, $assocName, $object);
-                        foreach ($container as $manager) {
+            if ($config = $this->getConfiguration($om, $meta->getName())) {
+                $this->flushFileUploads($ea, $config, $object);
+            } /*elseif ($assocNames = $meta->getAssociationNames()) {
+                echo $meta->getName();
+                foreach ($assocNames as $assocName) {
+                    $targetClass = $meta->getAssociationTargetClass($assocName);
+                    $assocMeta = $om->getClassMetadata($targetClass);
+                    if ($config = $this->getConfiguration($om, $assocMeta->getName())) {
+                        if ($meta->isSingleValuedAssociation($assocName)) {
+                            $manager = $this->getPropertyValueFromObject($meta, $assocName, $object);
                             $this->flushFileUploads($ea, $config, $manager);
+                            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $manager);
+                        } else {
+                            $container = $this->getPropertyValueFromObject($meta, $assocName, $object);
+                            foreach ($container as $manager) {
+                                $this->flushFileUploads($ea, $config, $manager);
+                            }
                         }
-
-                        /*if ($config['associatedFiles']) {
-                            $om->persist($object);
-                            $om->flush($object);
-                            $ea->recomputeSingleObjectChangeSet($uow, $assocMeta, $object);
-                        }*/
                     }
                 }
-            }
+            }*/
         }
 
         $em->addEventListener(__FUNCTION__, $this);
@@ -163,7 +154,6 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
         $meta = $om->getClassMetadata(get_class($object));
 
         $uploads = $this->getPropertyValueFromObject($meta, $config['fileInfoField'], $object);
-
         if (!is_array($uploads) || !ArrayUtils::filterRecursive($uploads, null, true)) {
             // No uploaded files
             return;
@@ -180,8 +170,6 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
             throw new \RuntimeException('You have to define the default file class');
         }
 
-        $uploadableSubscriber = $this->getUploadableSubscriber();
-
         if (ArrayUtils::hasStringKeys($uploads)) {
             $uploads = [$uploads];
         }
@@ -191,6 +179,7 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
             $pathGenerator = $config['pathGenerator'];
         }
 
+        $uploadableSubscriber = $this->getUploadableSubscriber();
         $fileInfoClass = $uploadableSubscriber->getDefaultFileInfoClass();
         foreach ($uploads as $fileInfoArray) {
             $file     = $this->createFile($fileClass, $fileInfoArray, $pathGenerator);
@@ -346,11 +335,13 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
 
     /**
      * @param UploadableSubscriber $subscriber
+     * @return self
      */
     public function setUploadableSubscriber(UploadableSubscriber $subscriber)
     {
         $subscriber->setDefaultFileInfoClass(FileInfoArray::class);
         $this->uploadableSubscriber = $subscriber;
+        return $this;
     }
 
     /**
@@ -363,10 +354,12 @@ class ManagerSubscriber extends MappedEventSubscriber implements EventManagerAwa
 
     /**
      * @param string $fileClass
+     * @return self
      */
     public function setFileClass($fileClass)
     {
         $this->fileClass = $fileClass;
+        return $this;
     }
 
     /**
