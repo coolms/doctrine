@@ -49,4 +49,13 @@ trait NotifyPropertyChangedTrait
         $this->listeners[] = $listener;
         return $this;
     }
+
+    /**
+     * @return array
+     */
+    public function __sleep()
+    {
+        // Exclude listeners property
+        return array_diff(array_keys(get_object_vars($this)), ['listeners']);
+    }
 }
