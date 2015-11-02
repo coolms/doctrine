@@ -12,6 +12,7 @@ namespace CmsDoctrine\Mapping\Hierarchy\Mapping\Event\Adapter;
 
 use Gedmo\Mapping\Event\Adapter\ORM as BaseAdapterORM,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
+    CmsCommon\Mapping\Hierarchy\HierarchyInterface,
     CmsDoctrine\Mapping\Hierarchy\Mapping\Event\TreeAdapterInterface;
 
 /**
@@ -22,7 +23,7 @@ class ORM extends BaseAdapterORM implements TreeAdapterInterface
     /**
      * @var string
      */
-    protected $hierarchyClassName = 'CmsCommon\\Mapping\\Hierarchy\\HierarchyInterface';
+    protected $hierarchyClassName = HierarchyInterface::class;
 
     /**
      * {@inheritDoc}
