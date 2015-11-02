@@ -32,7 +32,10 @@ class DecimalObject extends Type
      */
     public function getSQLDeclaration(array $fieldDeclaration, AbstractPlatform $platform)
     {
-        return $platform->getDecimalTypeDeclarationSQL($fieldDeclaration);
+        $typeDeclaration  = $platform->getDecimalTypeDeclarationSQL($fieldDeclaration);
+        $typeDeclaration .= " COMMENT '(DC2Type:decimal_object)'";
+
+        return $typeDeclaration;
     }
 
     /**
