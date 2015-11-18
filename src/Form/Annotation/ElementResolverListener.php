@@ -94,6 +94,7 @@ class ElementResolverListener extends AbstractListenerAggregate
      *
      * Removes the hydrator class from collection specification.
      *
+     * @todo remove this callback
      * @param  \Zend\EventManager\EventInterface $e
      * @return void
      */
@@ -140,8 +141,8 @@ class ElementResolverListener extends AbstractListenerAggregate
         $metadata = $this->objectManager->getClassMetadata($formSpec['object']);
 
         if ($metadata->hasAssociation($elementSpec['spec']['name'])) {
-            $elementSpec['spec']['options']['target_class']
-                = $metadata->getAssociationTargetClass($elementSpec['spec']['name']);
+            $elementSpec['spec']['options']['target_class'] =
+                $metadata->getAssociationTargetClass($elementSpec['spec']['name']);
         }
     }
 }
