@@ -10,7 +10,7 @@
 
 namespace CmsDoctrine\Mapping\Blameable;
 
-use Doctrine\Common\EventArgs,
+use Doctrine\Common\Persistence\Event\LoadClassMetadataEventArgs,
     Doctrine\Common\NotifyPropertyChanged,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Gedmo\Blameable\BlameableListener,
@@ -45,7 +45,7 @@ class BlameableSubscriber extends BlameableListener
     /**
      * {@inheritDoc}
      */
-    public function loadClassMetadata(EventArgs $eventArgs)
+    public function loadClassMetadata(LoadClassMetadataEventArgs $eventArgs)
     {
         parent::loadClassMetadata($eventArgs);
 
