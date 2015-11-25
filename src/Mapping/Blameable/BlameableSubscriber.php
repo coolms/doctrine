@@ -10,8 +10,8 @@
 
 namespace CmsDoctrine\Mapping\Blameable;
 
-use Doctrine\Common\Persistence\Event\LoadClassMetadataEventArgs,
-    Doctrine\Common\NotifyPropertyChanged,
+use Doctrine\Common\NotifyPropertyChanged,
+    Doctrine\Common\Persistence\Event\LoadClassMetadataEventArgs,
     Doctrine\Common\Persistence\Mapping\ClassMetadata,
     Gedmo\Blameable\BlameableListener,
     CmsDoctrine\Mapping\Blameable\Mapping\Event\BlameableAdapterInterface,
