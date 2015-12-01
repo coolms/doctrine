@@ -29,6 +29,7 @@ final class ORM extends EventAdapter implements BlameableAdapterInterface
                 continue;
             }
 
+            $fieldMapping = $meta->getFieldMapping($field);
             $mapping = ['fieldName' => $field, 'targetEntity' => $targetEntity];
 
             if ($meta->isInheritedField($field)) {
@@ -44,6 +45,9 @@ final class ORM extends EventAdapter implements BlameableAdapterInterface
             }
 
             unset($meta->fieldMappings[$field]);
+            unset($meta->fieldNames[$fieldMapping['columnName']]);
+            unset($meta->columnNames[$fieldMapping['fieldName']]);
+
             $meta->mapManyToOne($mapping);
         }
     }
@@ -67,6 +71,7 @@ final class ORM extends EventAdapter implements BlameableAdapterInterface
             }
 
             unset($meta->associationMappings[$field]);
+
             $meta->mapField($mapping);
         }
     }
